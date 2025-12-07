@@ -9,7 +9,7 @@ const CONFIG = {
   cellSizePx: 12,       // ขนาดเซลล์
   resolution: 0.5,      // 1 ช่อง = 0.5 เมตร
   startRow: 6,          // เริ่มวาดห่างจากขอบบน
-  startCol: 6,          // เริ่มวาดห่างจากขอบซ้าย
+  startCol: 20,         // เริ่มวาดห่างจากขอบซ้าย
   stumpHeight: 2,       // ความสูงเสาตอม่อ
   colors: {
     beam: "#37474f",      // สีโครงสร้าง
@@ -185,7 +185,7 @@ function generateBlueprint() {
   // ==========================================
   // DRAW TOP VIEW
   // ==========================================
-  currentRow += 15;
+  currentRow += 20;
   planSheet.getRange(currentRow - 4, startCol).setValue("TOP VIEW (Plan)").setFontSize(12).setFontWeight("bold");
 
   gridX = startCol;
