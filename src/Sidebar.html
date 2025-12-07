@@ -92,7 +92,7 @@
     </div>
 
     <div id="TabInput" class="tab-content" style="display: block;">
-      
+
       <div class="block">
         <label for="spanX">Span X (Horizontal)</label>
         <input type="text" id="spanX" value="4,4,4" placeholder="e.g. 4,4,4">
@@ -103,6 +103,12 @@
         <label for="height">Height (Vertical)</label>
         <input type="text" id="height" value="3.5,3.5,3.5" placeholder="e.g. 3.5,3.5">
         <div class="hint">ความสูงแต่ละชั้น (ล่างขึ้นบน)</div>
+      </div>
+      
+      <div class="block">
+        <label for="loads">Distributed Load (T/m)</label>
+        <input type="text" id="loads" value="1.5, 2.0, 2.0" placeholder="e.g. 1.0, 2.0, 1.5">
+        <div class="hint">น้ำหนักบรรทุกแต่ละชั้น (บนหลังคา, ชั้นถัดไป...)</div>
       </div>
 
       <div class="block">
@@ -162,17 +168,18 @@
         evt.currentTarget.className += " active";
       }
 
-      // Logic เดิมสำหรับปุ่ม Generate
       document.getElementById('btnDraw').addEventListener('click', function() {
         var btn = this;
         var errorMsg = document.getElementById('errorMsg');
         
         var spanX = document.getElementById('spanX').value;
         var height = document.getElementById('height').value;
+        var loads = document.getElementById('loads').value; // [ใหม่] รับค่า Load
         var spanY = document.getElementById('spanY').value;
 
+        // Validation (อนุญาตให้ loads ว่างได้ ถ้าไม่ใส่ถือว่าเป็น 0)
         if(!spanX || !height || !spanY) {
-          errorMsg.textContent = "กรุณากรอกข้อมูลให้ครบถ้วน";
+          errorMsg.textContent = "กรุณากรอก Span และ Height ให้ครบ";
           errorMsg.style.display = 'block';
           return;
         }
@@ -192,7 +199,7 @@
             errorMsg.textContent = "Error: " + err.message;
             errorMsg.style.display = 'block';
           })
-          .receiveFormInput(spanX, height, spanY);
+          .receiveFormInput(spanX, height, loads, spanY); // [ใหม่] ส่ง loads ไปด้วย
       });
     </script>
   </body>
