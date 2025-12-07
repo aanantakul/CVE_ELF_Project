@@ -47,7 +47,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
 
   if (!rawSpanX) rawSpanX = "4,4,4";
   if (!rawHeight) rawHeight = "3.5,3.5";
-  if (!rawLoads) rawLoads = "1.5, 2.0"; 
+  if (!rawLoads) rawLoads = "1.5, 2.0, 1.0"; 
   if (!rawSpanY) rawSpanY = "4,3";
 
   // 1. Parse Inputs
@@ -269,13 +269,29 @@ function createLabelBox(sheet, row, col, text, color, align = "center", isBold =
 }
 
 function drawFixedSupport(sheet, row, centerX) {
-  const width = 4; const height = 3; 
+  const width = 4; 
+  const height = 2;
+  
   const startX = centerX - Math.floor(width / 2);
   if (startX < 1) return;
+
+  // 1. วาดก้อนฐานราก (Concrete Block)
   const range = sheet.getRange(row, startX, height, width);
   range.merge();
   range.setBackground(CONFIG.colors.support);
+  
+  // ตีเส้นขอบ: บน, ซ้าย, ล่าง, ขวา (ล่างหนาหน่อยให้ดูหนักแน่น)
   range.setBorder(true, true, true, true, null, null, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  // 2. [เพิ่ม] วาดสัญลักษณ์ดิน (Soil Symbol) ด้านล่างฐานราก
+  const soilRow = row + height; 
+  const soilRange = sheet.getRange(soilRow, startX - 1, 1, width + 2); // ใช้พื้นที่ใต้ฐานราก 1 แถว
+
+  soilRange.merge();
+  soilRange.setValue("/ / / / / / / / / / / /"); // พิมพ์ลายเส้นเฉียงแทนสัญลักษณ์ดิน
+  soilRange.setHorizontalAlignment("center").setVerticalAlignment("middle");
+  soilRange.setFontSize(8).setFontColor("#757575"); // สีเทาเข้ม
+  soilRange.setFontWeight("bold").setFontWeight("italic");
 }
 
 function drawColumnStump(sheet, row, x, height) {
