@@ -1,5 +1,5 @@
 /**
- * Building Structure Generator - V9.6 (Fix Load Arrow & Order)
+ * Building Structure Generator - V18 (Vertical Merge for Better Visibility)
  */
 
 const CONFIG = {
@@ -8,6 +8,7 @@ const CONFIG = {
   resolution: 0.5,      // 1 Cell = 0.5m
   minPadding: 10,       
   stumpHeight: 2,
+  pointLoadScale: 4,    // 1 ตัน = 4 ช่อง Grid
   colors: {
     beam: "#37474f",
     fillSide: "#f3e5f5",
@@ -37,17 +38,19 @@ function showSidebar() {
   SpreadsheetApp.getUi().showSidebar(html); 
 }
 
-function receiveFormInput(spanXStr, heightStr, loadsStr, spanYStr) {
-  generateBlueprintFromData(spanXStr, heightStr, loadsStr, spanYStr);
+function receiveFormInput(spanXStr, heightStr, loadsStr, spanYStr, pointLoadsStr) {
+  generateBlueprintFromData(spanXStr, heightStr, loadsStr, spanYStr, pointLoadsStr);
 }
 
-// --- CORE LOGIC (V12: First Span Load Label Only) ---
-function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
+// --- CORE LOGIC ---
+function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawPointLoads) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+  // Default Values
   if (!rawSpanX) rawSpanX = "4,4,4";
   if (!rawHeight) rawHeight = "3.5,3.5";
   if (!rawLoads) rawLoads = "1.5, 2.0, 1.0"; 
+  if (!rawPointLoads) rawPointLoads = "1.0, 2.5, 1.5"; 
   if (!rawSpanY) rawSpanY = "4,3";
 
   // 1. Parse Inputs
@@ -59,6 +62,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
   const heights_cells = parseToCells(rawHeight).reverse(); 
   const heights_meters = parseToMeters(rawHeight).reverse();
   const loads_val = parseFloats(rawLoads); 
+  const pointLoads_val = parseFloats(rawPointLoads); 
   const spansY_cells = parseToCells(rawSpanY);
   const spansY_meters = parseToMeters(rawSpanY);
 
@@ -67,11 +71,16 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
   const totalHeightCells_Side = heights_cells.reduce((a, b) => a + b, 0);
   const totalHeightCells_Top = spansY_cells.reduce((a, b) => a + b, 0);
   
-  const canvasWidth = Math.max(drawingWidth + (CONFIG.minPadding * 2), 80); 
+  const maxPointLoad = Math.max(...pointLoads_val, 0);
+  // เพิ่มพื้นที่ซ้ายสำหรับ Point Load (เผื่อ Merge 3 ช่อง + 2 ช่องเดิม)
+  const requiredLeftSpace = Math.ceil(maxPointLoad * CONFIG.pointLoadScale) + 9; 
+  
+  const canvasWidth = Math.max(drawingWidth + requiredLeftSpace + CONFIG.minPadding, 80); 
   const totalRowsNeeded = totalHeightCells_Side + totalHeightCells_Top + 50; 
 
   let startCol = Math.floor((canvasWidth - drawingWidth) / 2);
-  if (startCol < 4) startCol = 4; 
+  if (startCol < requiredLeftSpace) startCol = requiredLeftSpace; 
+  
   let startRow = 8; 
 
   // 3. Setup Sheet
@@ -98,35 +107,40 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
   
   planSheet.getRange(currentRow - 6, startCol).setValue("SIDE VIEW (Elevation)").setFontSize(12).setFontWeight("bold");
 
-  // --- Loop วาดห้องและคานชั้นบนๆ ---
+  // --- Loop วาดชั้นบนๆ ---
   heights_cells.forEach((hCells, index) => {
     let currentX = startCol;
     const hMeters = heights_meters[index];
     
-    // คำนวณ Index ของ Load
-    const loadIndex = heights_cells.length - index;
-    const loadVal = loads_val[loadIndex] || 0; 
+    // Index Mapping (Bottom-Up Logic)
+    // Point Load: Index 0=Base, 1=FL2, Last=Roof
+    // Loop: Roof -> Base
+    const levelIndex = (pointLoads_val.length - 1) - index; 
+    
+    // Dist Load: Index 0=BaseBeam, 1=FL2Beam, Last=RoofBeam
+    const distLoadIndex = (loads_val.length - 1) - index;
+
+    const distLoad = loads_val[distLoadIndex] || 0; 
+    const pointLoad = pointLoads_val[levelIndex] || 0; 
 
     createLabelBox(planSheet, currentRow + Math.floor(hCells/2) - 1, startCol - 3, `${hMeters}m`, CONFIG.colors.dimText);
+    
+    // Point Load (Lateral)
+    if (pointLoad > 0) {
+      drawLateralLoad(planSheet, currentRow, startCol, pointLoad);
+    }
 
-    // Loop วาดทีละห้อง (Span)
+    // Loop วาด Span
     for (let i = 0; i < spansX_cells.length; i++) {
       const wCells = spansX_cells[i];
-      
       const room = planSheet.getRange(currentRow, currentX, hCells, wCells);
       room.setBackground(CONFIG.colors.fillSide);
       room.setBorder(true, true, true, true, null, null, CONFIG.colors.beam, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
       
-      if (loadVal > 0) {
-        // 1. วาด "ลูกศร" ทุกช่วงเสา
+      if (distLoad > 0) {
         drawLoadArrows(planSheet, currentRow, currentX, wCells);
-
-        // 2. วาด "ตัวเลข" แค่ช่วงเสาแรก (i==0) เท่านั้น
-        if (i === 0) {
-           drawLoadLabel(planSheet, currentRow, currentX, wCells, loadVal);
-        }
+        if (i === 0) drawLoadLabel(planSheet, currentRow, currentX, wCells, distLoad);
       }
-
       currentX += wCells;
     }
     
@@ -136,20 +150,21 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
     currentRow += hCells;
   });
 
-  const bottomLoadVal = loads_val[0] || 0; 
-  
-  if (bottomLoadVal > 0) {
+  // --- วาด Load ชั้นล่างสุด (Base / Ground Level) ---
+  const basePointLoad = pointLoads_val[0] || 0;
+  if (basePointLoad > 0) {
+    drawLateralLoad(planSheet, currentRow, startCol, basePointLoad);
+  }
+
+  const bottomDistLoad = loads_val[0] || 0;
+  if (bottomDistLoad > 0) {
     let currentX = startCol;
     for (let i = 0; i < spansX_cells.length; i++) {
       const wCells = spansX_cells[i];
-      // วาดลูกศรทุกช่วง
       drawLoadArrows(planSheet, currentRow, currentX, wCells);
-      
-      // วาดตัวเลขแค่ช่วงแรก
       if (i === 0) {
-        drawLoadLabel(planSheet, currentRow, currentX, wCells, bottomLoadVal);
+        drawLoadLabel(planSheet, currentRow, currentX, wCells, bottomDistLoad);
       }
-      
       currentX += wCells;
     }
   }
@@ -167,7 +182,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
     drawFixedSupport(planSheet, currentRow + CONFIG.stumpHeight, x);
   });
 
-  // SIDE VIEW LABELS
+  // LABELS & TOP VIEW
   let gridX = startCol;
   let gridNum = 1;
   const labelRow = currentRow + CONFIG.stumpHeight + 5; 
@@ -181,9 +196,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
     createLabelBox(planSheet, labelRow, gridX - 1, gridNum++, CONFIG.colors.gridLabel);
   }
 
-  // ==========================================
-  // DRAW TOP VIEW
-  // ==========================================
+  // Draw Top View
   currentRow += 15;
   planSheet.getRange(currentRow - 4, startCol).setValue("TOP VIEW (Plan)").setFontSize(12).setFontWeight("bold");
 
@@ -225,33 +238,59 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY) {
   planSheet.setHiddenGridlines(true);
 }
 
+
 // --- HELPER FUNCTIONS ---
+
+// [แก้ไข] Point Load: ใช้ระดับเดิม (beamRow) แต่ Merge ขึ้นบน 2 ช่อง
+function drawLateralLoad(sheet, beamRow, startCol, val) {
+  const scale = CONFIG.pointLoadScale; 
+  const arrowLength = Math.max(3, Math.ceil(val * scale));
+  const extraSpace = 3; 
+  const arrowStartCol = startCol - arrowLength - extraSpace;
+  const totalWidth = arrowLength + extraSpace;
+
+  if (arrowStartCol > 0) {
+    // ใช้ beamRow - 1 เป็นจุดเริ่ม เพื่อ Merge ลงมาหา beamRow (รวม 2 ช่อง)
+    // หรือจะเริ่มที่ beamRow-1 แล้วสูง 2 ก็ได้ เพื่อให้ครอบคลุมพื้นที่
+    const targetRow = beamRow - 1; 
+    const range = sheet.getRange(targetRow, arrowStartCol, 2, totalWidth); // สูง 2 ช่อง
+    range.merge();
+    
+    const dashCount = Math.max(1, arrowLength); 
+    const line = "─".repeat(dashCount); 
+    const text = `${val}T ${line}→`;
+    
+    range.setValue(text);
+    range.setHorizontalAlignment("right").setVerticalAlignment("middle");
+    range.setFontColor(CONFIG.colors.loadArrow).setFontWeight("bold").setFontSize(9);
+  }
+}
 
 function drawLoadArrows(sheet, beamRow, startCol, width) {
   const arrowRow = beamRow - 1;
   if (arrowRow > 0) {
     const arrowRange = sheet.getRange(arrowRow, startCol, 1, width);
     arrowRange.merge(); 
-    
     const numArrows = Math.max(1, Math.floor(width - 1)); 
     const arrows = "↓ ↓ ".repeat(numArrows);
-    
     arrowRange.setValue(arrows);
     arrowRange.setHorizontalAlignment("center").setVerticalAlignment("bottom");
     arrowRange.setFontColor(CONFIG.colors.loadArrow).setFontSize(8).setFontWeight("bold");
   }
 }
 
+// [แก้ไข] Dist Load Label: Merge ขึ้นบน 2 ช่อง
 function drawLoadLabel(sheet, beamRow, startCol, width, val) {
   const textRow = beamRow - 2;
   if (textRow > 0) {
- 
-    const textRange = sheet.getRange(textRow, startCol, 1, width);
-    textRange.merge();
+    // Merge แถว textRow-1 (บน) และ textRow (ล่าง) เข้าด้วยกัน
+    const startRow = textRow - 1;
+    const range = sheet.getRange(startRow, startCol, 2, width); // สูง 2 ช่อง
+    range.merge();
     
-    textRange.setValue(`${val} T/m`);
-    textRange.setHorizontalAlignment("center").setVerticalAlignment("bottom");
-    textRange.setFontColor(CONFIG.colors.loadText).setFontSize(9).setFontWeight("bold");
+    range.setValue(`${val} T/m`);
+    range.setHorizontalAlignment("center").setVerticalAlignment("middle");
+    range.setFontColor(CONFIG.colors.loadText).setFontSize(9).setFontWeight("bold");
   }
 }
 
@@ -269,28 +308,19 @@ function createLabelBox(sheet, row, col, text, color, align = "center", isBold =
 }
 
 function drawFixedSupport(sheet, row, centerX) {
-  const width = 4; 
-  const height = 2;
-  
+  const width = 4; const height = 2;
   const startX = centerX - Math.floor(width / 2);
   if (startX < 1) return;
-
-  // 1. วาดก้อนฐานราก (Concrete Block)
   const range = sheet.getRange(row, startX, height, width);
   range.merge();
   range.setBackground(CONFIG.colors.support);
-  
-  // ตีเส้นขอบ: บน, ซ้าย, ล่าง, ขวา (ล่างหนาหน่อยให้ดูหนักแน่น)
   range.setBorder(true, true, true, true, null, null, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-
-  // 2. [เพิ่ม] วาดสัญลักษณ์ดิน (Soil Symbol) ด้านล่างฐานราก
   const soilRow = row + height; 
-  const soilRange = sheet.getRange(soilRow, startX - 1, 1, width + 2); // ใช้พื้นที่ใต้ฐานราก 1 แถว
-
+  const soilRange = sheet.getRange(soilRow, startX - 1, 1, width + 2); 
   soilRange.merge();
-  soilRange.setValue("/ / / / / / / / / / / /"); // พิมพ์ลายเส้นเฉียงแทนสัญลักษณ์ดิน
+  soilRange.setValue("/ / / / / / / / / / / /"); 
   soilRange.setHorizontalAlignment("center").setVerticalAlignment("middle");
-  soilRange.setFontSize(8).setFontColor("#757575"); // สีเทาเข้ม
+  soilRange.setFontSize(8).setFontColor("#757575"); 
   soilRange.setFontWeight("bold").setFontWeight("italic");
 }
 

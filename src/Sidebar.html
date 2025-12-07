@@ -3,204 +3,243 @@
   <head>
     <base target="_top">
     <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-<style>
-      body { padding: 0; font-family: 'Google Sans', sans-serif; background: #f9f9f9; }
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+      body { padding: 0; font-family: 'Roboto', sans-serif; background: #f0f2f5; color: #333; }
       
-      /* --- TABS STYLE --- */
-      .tab-header {
-        display: flex;
-        background-color: #fff;
-        border-bottom: 1px solid #ddd;
-      }
+      /* --- HEADER & TABS --- */
+      .sticky-header { position: sticky; top: 0; z-index: 100; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .tab-header { display: flex; border-bottom: 1px solid #ddd; }
+      
       .tab-btn {
-        flex: 1; /* ขยายให้เต็มพื้นที่เท่าๆ กัน */
-        
-        /* เทคนิคจัดกึ่งกลางแบบ Flexbox */
-        display: flex; 
-        justify-content: center; /* จัดกลางแนวนอน */
-        align-items: center;     /* จัดกลางแนวตั้ง */
-        
-        background-color: transparent;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 10px 5px;
-        font-size: 13px;
-        font-weight: bold;
-        color: #666;
-        transition: 0.3s;
-        border-bottom: 3px solid transparent;
-        white-space: nowrap; 
-        overflow: hidden;
+        flex: 1; 
+        display: flex; justify-content: center; align-items: center;
+        padding: 12px 5px; 
+        font-size: 13px;   
+        border: none; background: none; font-weight: 700; color: #666; cursor: pointer;
+        border-bottom: 3px solid transparent; transition: 0.2s;
+        white-space: nowrap; overflow: hidden;
       }
-      .tab-btn:hover { background-color: #f1f1f1; }
-      .tab-btn.active {
-        color: #1976d2;
-        border-bottom: 3px solid #1976d2;
-      }
+      .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
       
-      /* --- CONTENT STYLE --- */
-      .tab-content {
-        display: none;
-        padding: 15px;
-        animation: fadeEffect 0.5s;
-      }
-      .block { margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-      label { display: block; font-weight: bold; margin-bottom: 5px; color: #37474f; font-size: 12px; }
-      input[type="text"], select { width: 100%; padding: 6px 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-      .hint { font-size: 10px; color: #888; margin-top: 4px; }
+      .content { padding: 12px; padding-bottom: 80px; }
       
-      /* BUTTON STYLE */
-      button.action { 
-        background: #1976d2; 
-        color: white; 
-        width: 100%; 
-        
-        /* เทคนิคจัดกึ่งกลางแบบ Flexbox */
-        display: flex;
-        justify-content: center; /* จัดกลางแนวนอน */
-        align-items: center;     /* จัดกลางแนวตั้ง */
-        text-align: center;      /* สำรองไว้ */
+      /* --- INPUT GROUPS --- */
+      .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #5f6368; margin: 15px 0 8px 0; letter-spacing: 0.5px; }
+      .input-group { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid #dadce0; margin-bottom: 10px; }
+      .input-label { display: block; font-size: 11px; font-weight: 700; color: #1a73e8; margin-bottom: 4px; }
+      .text-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+      
+      /* --- DYNAMIC FLOOR CARD --- */
+      .floor-list { display: flex; flex-direction: column-reverse; gap: 10px; }
+      
+      .floor-card {
+        background: #fff; border-radius: 8px; border-left: 5px solid #1a73e8;
+        padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;
+        animation: slideIn 0.3s ease-out;
+      }
+      /* Roof Style */
+      .floor-card.is-roof { border-left-color: #d93025; }
+      
+      /* [ใหม่] ซ่อน Input Height สำหรับชั้น Roof แต่ยังคงพื้นที่ไว้ (visibility: hidden) เพื่อ layout ไม่พัง */
+      .floor-card.is-roof .col-height-wrapper { visibility: hidden; }
 
-        padding: 10px 5px; 
-        border: none; 
-        border-radius: 4px; 
-        font-size: 13px; 
-        font-weight: bold; 
-        margin-top: 10px; 
-        cursor: pointer; 
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-        transition: 0.2s; 
-        white-space: nowrap;
-      }
-      button.action:hover { background: #1565c0; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-      button.action:disabled { background: #ccc; cursor: not-allowed; }
-      
-      .error { color: #d32f2f; font-size: 12px; margin-top: 10px; padding: 10px; background: #ffebee; border-radius: 4px; display: none; }
+      .floor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+      .floor-title { font-weight: 700; font-size: 14px; color: #202124; }
+      .floor-card.is-roof .floor-title { color: #d93025; } 
 
-      @keyframes fadeEffect {
-        from {opacity: 0;}
-        to {opacity: 1;}
+      .btn-delete { background: none; border: none; color: #d93025; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 50%; }
+      .btn-delete:hover { background: #fce8e6; }
+      
+      .row-inputs { display: flex; gap: 8px; }
+      .col { flex: 1; }
+      .mini-label { font-size: 10px; color: #5f6368; margin-bottom: 2px; display: block; white-space: nowrap; }
+      .num-input { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+      .num-input:focus { border-color: #1a73e8; outline: none; }
+
+      /* --- FOOTER ACTIONS --- */
+      .footer-actions {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: #fff; padding: 10px; border-top: 1px solid #ddd;
+        display: flex; gap: 10px; z-index: 200;
       }
+      
+      .btn-add { 
+        flex: 1; display: flex; justify-content: center; align-items: center;
+        background: #e8f0fe; color: #1a73e8; border: none; padding: 10px 5px;
+        border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;
+      }
+      .btn-add:hover { background: #d2e3fc; }
+      
+      .btn-generate { 
+        flex: 2; display: flex; justify-content: center; align-items: center;
+        background: #1a73e8; color: white; border: none; padding: 10px 5px;
+        border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap;
+      }
+      .btn-generate:hover { background: #1557b0; }
+      
+      @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .error-msg { color: #d93025; font-size: 12px; text-align: center; margin-top: 5px; display: none; }
     </style>
   </head>
   <body>
 
-    <div class="tab-header">
-      <button class="tab-btn active" onclick="openTab(event, 'TabInput')">📝 Input</button>
-      <button class="tab-btn" onclick="openTab(event, 'TabSettings')">⚙️ Settings</button>
+    <div class="sticky-header">
+      <div class="tab-header">
+        <button class="tab-btn active">🏗️ Structure Manager</button>
+      </div>
     </div>
 
-    <div id="TabInput" class="tab-content" style="display: block;">
-
-      <div class="block">
-        <label for="spanX">Span X (Horizontal)</label>
-        <input type="text" id="spanX" value="4,4,4" placeholder="e.g. 4,4,4">
-        <div class="hint">ระยะห่างเสาแนวนอน (เมตร)</div>
+    <div class="content">
+      
+      <div class="section-title">Grid Configuration</div>
+      
+      <div class="input-group">
+        <label class="input-label">SPAN X (Horizontal Bays)</label>
+        <input type="text" id="globalSpanX" class="text-input" value="4,4,4" placeholder="e.g. 4,4,4">
+      </div>
+      <div class="input-group">
+        <label class="input-label">SPAN Y (Building Depth)</label>
+        <input type="text" id="globalSpanY" class="text-input" value="4,3,4" placeholder="e.g. 4,3">
       </div>
 
-      <div class="block">
-        <label for="height">Height (Vertical)</label>
-        <input type="text" id="height" value="3.5,3.5,3.5" placeholder="e.g. 3.5,3.5">
-        <div class="hint">ความสูงแต่ละชั้น (ล่างขึ้นบน)</div>
+      <div class="section-title" style="display:flex; justify-content:space-between;">
+        <span>Levels (Floors & Roof)</span>
+        <span style="font-size:10px; color:#999; font-weight:normal;">Sorted: Bottom to Top</span>
       </div>
       
-      <div class="block">
-        <label for="loads">Distributed Load (T/m)</label>
-        <input type="text" id="loads" value="1.5, 2.0, 2.0, 1.0" placeholder="e.g. 1.0, 2.0, 1.5">
-        <div class="hint">น้ำหนักบรรทุกแต่ละชั้น (บนหลังคา, ชั้นถัดไป...)</div>
-      </div>
-
-      <div class="block">
-        <label for="spanY">Span Y (Depth)</label>
-        <input type="text" id="spanY" value="4,3,4" placeholder="e.g. 4,3">
-        <div class="hint">ระยะเสาแนวลึก (Top View)</div>
-      </div>
-
-      <button class="action" id="btnDraw">🏗️ Generate Blueprint</button>
-      <div id="errorMsg" class="error"></div>
-    </div>
-
-    <div id="TabSettings" class="tab-content">
-      <div class="block">
-        <label>Grid Resolution</label>
-        <select disabled>
-          <option>10 cm (ละเอียด)</option>
-          <option>50 cm (หยาบ)</option>
-        </select>
-        <div class="hint">ฟีเจอร์นี้จะมาในอนาคต</div>
-      </div>
-      
-      <div class="block">
-        <label>Theme Color</label>
-        <div style="display:flex; gap:5px; margin-top:5px;">
-           <div style="width:20px; height:20px; background:#1976d2; border-radius:50%;"></div>
-           <div style="width:20px; height:20px; background:#37474f; border-radius:50%;"></div>
-           <div style="width:20px; height:20px; background:#b71c1c; border-radius:50%;"></div>
+      <div id="floorContainer" class="floor-list">
         </div>
-      </div>
       
-      <div style="text-align:center; font-size:12px; color:#999; margin-top:20px;">
-        Building Generator V8.0<br>
-        Run on Google Apps Script
-      </div>
+      <div id="errorMsg" class="error-msg"></div>
+
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn-add" onclick="addNewFloor()">+ Add Level</button>
+      <button class="btn-generate" onclick="collectAndGenerate()">🚀 Draw Blueprint</button>
     </div>
 
     <script>
-      // ฟังก์ชันสลับ Tab
-      function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
+      let floorCount = 0;
+
+      function addNewFloor(defaultHeight = 3.5, defaultLoad = 1.5, defaultPoint = 0) {
+        floorCount++;
+        const container = document.getElementById('floorContainer');
+        const div = document.createElement('div');
+        div.className = 'floor-card';
+        div.id = 'floor-' + floorCount;
         
-        // 1. ซ่อน Content ทั้งหมด
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-          tabcontent[i].style.display = "none";
-        }
-        
-        // 2. เอา class 'active' ออกจากปุ่มทั้งหมด
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) {
-          tablinks[i].className = tablinks[i].className.replace(" active", "");
-        }
-        
-        // 3. แสดง Content ที่เลือก และใส่ class 'active' ให้ปุ่มที่กด
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.className += " active";
+        div.innerHTML = `
+          <div class="floor-header">
+            <span class="floor-title">Level ${floorCount}</span>
+            <button class="btn-delete" onclick="removeFloor(this)" title="Remove this floor">✕</button>
+          </div>
+          <div class="row-inputs">
+            <div class="col col-height-wrapper">
+              <span class="mini-label">Col Height (m)</span>
+              <input type="number" step="0.1" class="num-input inp-height" value="${defaultHeight}">
+            </div>
+            <div class="col">
+              <span class="mini-label">Load (T/m)</span>
+              <input type="number" step="0.1" class="num-input inp-load" value="${defaultLoad}">
+            </div>
+            <div class="col">
+              <span class="mini-label">Point Load</span>
+              <input type="number" step="0.1" class="num-input inp-point" value="${defaultPoint}">
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+        updateFloorLabels();
       }
 
-      document.getElementById('btnDraw').addEventListener('click', function() {
-        var btn = this;
-        var errorMsg = document.getElementById('errorMsg');
-        
-        var spanX = document.getElementById('spanX').value;
-        var height = document.getElementById('height').value;
-        var loads = document.getElementById('loads').value; // [ใหม่] รับค่า Load
-        var spanY = document.getElementById('spanY').value;
+      function removeFloor(btn) {
+        const card = btn.closest('.floor-card');
+        card.remove();
+        updateFloorLabels();
+      }
 
-        // Validation (อนุญาตให้ loads ว่างได้ ถ้าไม่ใส่ถือว่าเป็น 0)
-        if(!spanX || !height || !spanY) {
-          errorMsg.textContent = "กรุณากรอก Span และ Height ให้ครบ";
+      function updateFloorLabels() {
+        const cards = document.querySelectorAll('.floor-card');
+        floorCount = cards.length;
+        
+        cards.forEach((card, index) => {
+          const title = card.querySelector('.floor-title');
+          
+          // ถ้าเป็นใบสุดท้าย ให้เป็น Roof และซ่อน Height Input
+          if (index === cards.length - 1) {
+             title.textContent = `Roof / Deck (Top)`;
+             card.classList.add('is-roof'); 
+          } else {
+             title.textContent = `Floor ${index + 1}`;
+             card.classList.remove('is-roof');
+          }
+        });
+      }
+
+      function collectAndGenerate() {
+        const btn = document.querySelector('.btn-generate');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        const spanX = document.getElementById('globalSpanX').value;
+        const spanY = document.getElementById('globalSpanY').value;
+        const cards = document.querySelectorAll('.floor-card');
+        
+        if (cards.length === 0) {
+          errorMsg.textContent = "Please add at least 1 level.";
           errorMsg.style.display = 'block';
           return;
         }
-        errorMsg.style.display = 'none';
-        
+
+        let heightsArr = [];
+        let loadsArr = [];
+        let pointsArr = [];
+
+        cards.forEach((card, index) => {
+          const h = card.querySelector('.inp-height').value || 0;
+          const l = card.querySelector('.inp-load').value || 0;
+          const p = card.querySelector('.inp-point').value || 0;
+          
+          // Logic: ถ้าเป็นใบสุดท้าย (Roof) เราจะไม่เก็บค่า Height ส่งไป 
+          // เพื่อให้จำนวน Height = จำนวนชั้น แต่ Load มีจำนวนเท่ากับ คานทั้งหมด (ชั้น+หลังคา)
+          if (index < cards.length - 1) {
+            heightsArr.push(h);
+          }
+          
+          // แต่ Load และ PointLoad ต้องเก็บของ Roof ด้วย
+          loadsArr.push(l);
+          pointsArr.push(p);
+        });
+
+        const heightStr = heightsArr.join(',');
+        const loadsStr = loadsArr.join(',');
+        const pointsStr = pointsArr.join(',');
+
         btn.disabled = true;
-        btn.textContent = "กำลังคำนวณและวาด...";
+        btn.textContent = "Processing...";
+        errorMsg.style.display = 'none';
 
         google.script.run
-          .withSuccessHandler(function() {
+          .withSuccessHandler(() => {
             btn.disabled = false;
-            btn.textContent = "🏗️ Generate Blueprint";
+            btn.textContent = "🚀 Draw Blueprint";
           })
-          .withFailureHandler(function(err) {
+          .withFailureHandler((err) => {
             btn.disabled = false;
-            btn.textContent = "ลองใหม่อีกครั้ง";
+            btn.textContent = "Retry";
             errorMsg.textContent = "Error: " + err.message;
             errorMsg.style.display = 'block';
           })
-          .receiveFormInput(spanX, height, loads, spanY); // [ใหม่] ส่ง loads ไปด้วย
-      });
+          .receiveFormInput(spanX, heightStr, loadsStr, spanY, pointsStr);
+      }
+
+      window.onload = function() {
+        addNewFloor(3.5, 1.5, 1.4); // Floor 1
+        addNewFloor(3.5, 2.0, 1.4); // Floor 2
+        addNewFloor(0, 1.0, 1.0);   // Roof (Height ไม่ต้องใส่ก็ได้ เพราะถูกซ่อนและไม่ถูกส่งไป)
+      };
     </script>
   </body>
 </html>
