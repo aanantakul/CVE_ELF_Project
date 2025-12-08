@@ -5,149 +5,287 @@
     <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      body { padding: 0; font-family: 'Roboto', sans-serif; background: #f0f2f5; color: #333; }
-      
+      /* --- GLOBAL RESET & FONT --- */
+      body { padding: 0; font-family: 'Roboto', sans-serif; background: #f0f2f5; color: #333; overflow-x: hidden; }
+      * { box-sizing: border-box; }
+
       /* --- HEADER & TABS --- */
       .sticky-header { position: sticky; top: 0; z-index: 100; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
       .tab-header { display: flex; border-bottom: 1px solid #ddd; }
       
       .tab-btn {
-        flex: 1; 
-        display: flex; justify-content: center; align-items: center;
-        padding: 12px 5px; 
-        font-size: 13px;   
+        flex: 1; display: flex; justify-content: center; align-items: center;
+        padding: 10px 4px; font-size: 12px;   
         border: none; background: none; font-weight: 700; color: #666; cursor: pointer;
-        border-bottom: 3px solid transparent; transition: 0.2s;
-        white-space: nowrap; overflow: hidden;
+        border-bottom: 3px solid transparent; transition: 0.2s; 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
-      .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+      .tab-btn:hover { background: #f5f5f5; color: #1a73e8; }
+      .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; background: #f0f7ff; }
       
-      .content { padding: 12px; padding-bottom: 80px; }
+      .tab-content { display: none; padding: 10px; padding-bottom: 70px; animation: fadeIn 0.3s; }
+      .tab-content.active { display: block; }
+
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       
-      /* --- INPUT GROUPS --- */
-      .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #5f6368; margin: 15px 0 8px 0; letter-spacing: 0.5px; }
-      .input-group { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid #dadce0; margin-bottom: 10px; }
+      /* --- INPUT STYLES --- */
+      .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #5f6368; margin: 12px 0 6px 0; letter-spacing: 0.5px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; }
+      .input-group { background: #fff; border-radius: 6px; padding: 8px; border: 1px solid #dadce0; margin-bottom: 8px; }
       .input-label { display: block; font-size: 11px; font-weight: 700; color: #1a73e8; margin-bottom: 4px; }
-      .text-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
       
-      /* --- DYNAMIC FLOOR CARD --- */
-      .floor-list { display: flex; flex-direction: column-reverse; gap: 10px; }
-      
-      .floor-card {
-        background: #fff; border-radius: 8px; border-left: 5px solid #1a73e8;
-        padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;
-        animation: slideIn 0.3s ease-out;
+      /* --- FORM ELEMENTS --- */
+      .text-input, select { 
+        width: 100%; padding: 6px 30px 6px 10px;
+        border: 1px solid #ccc; border-radius: 4px; 
+        font-size: 12px; background-color: #fff; color: #333;
+        transition: border 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        -webkit-appearance: none; -moz-appearance: none; appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 8px auto;
       }
-      /* Roof Style */
+      select:hover { border-color: #1a73e8; }
+      select:focus, .text-input:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+      select:disabled { background-color: #f1f3f4; color: #999; cursor: not-allowed; background-image: none; }
+      
+      /* --- PARAMETER BOX --- */
+      .param-grid { display: flex; gap: 5px; margin-top: 5px; }
+      .value-box { 
+        flex: 1; background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 4px; 
+        padding: 6px; text-align: center; 
+      }
+      .val-label { font-size: 9px; color: #1a73e8; font-weight: bold; text-transform: uppercase; }
+      .val-num { font-size: 14px; font-weight: bold; color: #174ea6; }
+      #dispR, #dispOmega, #dispCd { font-size: 18px; }
+
+      /* --- DYNAMIC FLOOR CARD --- */
+      .floor-list { display: flex; flex-direction: column-reverse; gap: 8px; }
+      .floor-card {
+        background: #fff; border-radius: 6px; border-left: 4px solid #1a73e8;
+        padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;
+      }
       .floor-card.is-roof { border-left-color: #d93025; }
-      
-      /* [ใหม่] ซ่อน Input Height สำหรับชั้น Roof แต่ยังคงพื้นที่ไว้ (visibility: hidden) เพื่อ layout ไม่พัง */
       .floor-card.is-roof .col-height-wrapper { visibility: hidden; }
-
-      .floor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-      .floor-title { font-weight: 700; font-size: 14px; color: #202124; }
       .floor-card.is-roof .floor-title { color: #d93025; } 
-
-      .btn-delete { background: none; border: none; color: #d93025; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 50%; }
-      .btn-delete:hover { background: #fce8e6; }
+      .floor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .floor-title { font-weight: 700; font-size: 13px; color: #202124; }
       
-      .row-inputs { display: flex; gap: 8px; }
-      .col { flex: 1; }
-      .mini-label { font-size: 10px; color: #5f6368; margin-bottom: 2px; display: block; white-space: nowrap; }
-      .num-input { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+      .btn-delete { 
+        background: none; border: none; color: #d93025; cursor: pointer; 
+        font-size: 14px; padding: 2px 6px; border-radius: 4px; 
+        transition: background 0.2s;
+      }
+      .btn-delete:hover { background: #ffebee; }
+      
+      .row-inputs { display: flex; gap: 6px; }
+      .col { flex: 1; min-width: 0; }
+      .mini-label { font-size: 9px; color: #5f6368; margin-bottom: 2px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .num-input { width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; }
       .num-input:focus { border-color: #1a73e8; outline: none; }
 
       /* --- FOOTER ACTIONS --- */
       .footer-actions {
         position: fixed; bottom: 0; left: 0; right: 0;
-        background: #fff; padding: 10px; border-top: 1px solid #ddd;
-        display: flex; gap: 10px; z-index: 200;
+        background: #fff; padding: 8px; border-top: 1px solid #ddd;
+        display: flex; gap: 8px; z-index: 200;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        display: none; 
       }
-      
-      .btn-add { 
-        flex: 1; display: flex; justify-content: center; align-items: center;
-        background: #e8f0fe; color: #1a73e8; border: none; padding: 10px 5px;
-        border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;
+      .btn-add, .btn-generate {
+        display: flex; justify-content: center; align-items: center;
+        border: none; padding: 10px 4px; border-radius: 4px; 
+        font-weight: 700; font-size: 12px; cursor: pointer; 
+        white-space: nowrap; transition: 0.2s;
       }
+      .btn-add { flex: 1; background: #e8f0fe; color: #1a73e8; }
       .btn-add:hover { background: #d2e3fc; }
-      
-      .btn-generate { 
-        flex: 2; display: flex; justify-content: center; align-items: center;
-        background: #1a73e8; color: white; border: none; padding: 10px 5px;
-        border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; 
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap;
-      }
+      .btn-generate { flex: 2; background: #1a73e8; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
       .btn-generate:hover { background: #1557b0; }
       
-      @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .error-msg { color: #d93025; font-size: 12px; text-align: center; margin-top: 5px; display: none; }
+      .error-msg { color: #d93025; font-size: 11px; text-align: center; margin-top: 5px; display: none; }
     </style>
   </head>
   <body>
 
     <div class="sticky-header">
       <div class="tab-header">
-        <button class="tab-btn active">🏗️ Structure Manager</button>
+        <button class="tab-btn active" onclick="switchTab('TabSeismic')">🌍 Seismic</button>
+        <button class="tab-btn" onclick="switchTab('TabModel')">🏗️ Model</button>
       </div>
     </div>
 
-    <div class="content">
+    <div id="TabSeismic" class="tab-content active">
       
-      <div class="section-title">Grid Configuration</div>
-      
+      <div class="section-title">1. Location (DPT 1301/1302-61)</div>
       <div class="input-group">
-        <label class="input-label">SPAN X (Horizontal Bays)</label>
+        <label class="input-label">Province (จังหวัด)</label>
+        <select id="selProvince" onchange="onProvinceChange()"><option>Loading...</option></select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">District (อำเภอ)</label>
+        <select id="selAmphoe" onchange="onAmphoeChange()" disabled><option>-</option></select>
+      </div>
+      <div class="param-grid">
+        <div class="value-box">
+          <div class="val-label">Ss</div>
+          <div id="dispSs" class="val-num">-</div>
+        </div>
+        <div class="value-box">
+          <div class="val-label">S1</div>
+          <div id="dispS1" class="val-num">-</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:15px;">2. Site & Building Config</div>
+      <div class="input-group">
+        <label class="input-label">Soil Site Class (ชั้นดิน)</label>
+        <select id="selSoilClass">
+          <option value="A">A - Hard Rock (หินแข็ง)</option>
+          <option value="B">B - Rock (หิน)</option>
+          <option value="C">C - Very Dense Soil (ดินแน่นมาก)</option>
+          <option value="D" selected>D - Stiff Soil (ดินแข็ง) *Default</option>
+          <option value="E">E - Soft Clay (ดินอ่อน)</option>
+          <option value="F">F - Soil Requiring Response Analysis</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Risk Category (ความสำคัญอาคาร)</label>
+        <select id="selRiskCat" onchange="updateImportanceFactor()">
+          <option value="I">I - Low Hazard (น้อย)</option>
+          <option value="II" selected>II - General (ทั่วไป)</option>
+          <option value="III">III - High Occupancy (สูง)</option>
+          <option value="IV">IV - Essential (สูงมาก)</option>
+        </select>
+      </div>
+      <div class="param-grid">
+        <div class="value-box" style="background:#fff3e0; border-color:#ffe0b2;">
+          <div class="val-label" style="color:#e65100;">Ie (Importance)</div>
+          <div id="dispIe" class="val-num" style="color:#ef6c00;">1.00</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:15px;">3. Structural System</div>
+      <div class="input-group">
+        <label class="input-label">Resisting System (ระบบรับแรง)</label>
+        <select id="selSystem" onchange="updateSystemParams()">
+          <option value="OMF" selected>R.C. Ordinary Moment Frame (OMF)</option>
+          <option value="IMF">R.C. Intermediate Moment Frame (IMF)</option>
+          <option value="SMF">R.C. Special Moment Frame (SMF)</option>
+          <option value="SW">Shear Wall System</option>
+        </select>
+      </div>
+      <div class="param-grid">
+        <div class="value-box">
+          <div class="val-label">R</div>
+          <div id="dispR" class="val-num">3</div>
+        </div>
+        <div class="value-box">
+          <div class="val-label">Ω0</div>
+          <div id="dispOmega" class="val-num">3</div>
+        </div>
+        <div class="value-box">
+          <div class="val-label">Cd</div>
+          <div id="dispCd" class="val-num">2.5</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="TabModel" class="tab-content">
+      <div class="section-title">Grid Config</div>
+      <div class="input-group">
+        <label class="input-label">SPAN X (Horizontal)</label>
         <input type="text" id="globalSpanX" class="text-input" value="4,4,4" placeholder="e.g. 4,4,4">
       </div>
       <div class="input-group">
-        <label class="input-label">SPAN Y (Building Depth)</label>
+        <label class="input-label">SPAN Y (Depth)</label>
         <input type="text" id="globalSpanY" class="text-input" value="4,3,4" placeholder="e.g. 4,3">
       </div>
 
       <div class="section-title" style="display:flex; justify-content:space-between;">
-        <span>Levels (Floors & Roof)</span>
-        <span style="font-size:10px; color:#999; font-weight:normal;">Sorted: Bottom to Top</span>
+        <span>Levels</span>
+        <span style="font-size:10px; color:#999; font-weight:normal;">Bottom to Top</span>
       </div>
-      
-      <div id="floorContainer" class="floor-list">
-        </div>
-      
+      <div id="floorContainer" class="floor-list"></div>
       <div id="errorMsg" class="error-msg"></div>
-
     </div>
 
     <div class="footer-actions">
-      <button class="btn-add" onclick="addNewFloor()">+ Add Level</button>
-      <button class="btn-generate" onclick="collectAndGenerate()">🚀 Draw Blueprint</button>
+      <button id="btnAddFloor" class="btn-add" onclick="addNewFloor()">+ Add Level</button>
+      <button id="btnDraw" class="btn-generate" onclick="collectAndGenerate()">🚀 Draw Blueprint</button>
     </div>
 
     <script>
+      // --- TAB LOGIC ---
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        
+        const btnIndex = tabId === 'TabSeismic' ? 0 : 1;
+        document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+
+        const footer = document.querySelector('.footer-actions');
+        if(tabId === 'TabSeismic') {
+           footer.style.display = 'none';
+        } else {
+           footer.style.display = 'flex';
+        }
+      }
+
+      // --- SEISMIC PARAMETER LOGIC ---
+      function updateImportanceFactor() {
+        const cat = document.getElementById('selRiskCat').value;
+        let Ie = 1.0;
+        if (cat === 'I' || cat === 'II') Ie = 1.0;
+        else if (cat === 'III') Ie = 1.25;
+        else if (cat === 'IV') Ie = 1.50;
+        document.getElementById('dispIe').textContent = Ie.toFixed(2);
+      }
+
+      function updateSystemParams() {
+        const sys = document.getElementById('selSystem').value;
+        let R=3, Omega=3, Cd=2.5; // Default OMF
+        
+        switch(sys) {
+          case 'OMF': R=3; Omega=3; Cd=2.5; break;
+          case 'IMF': R=5; Omega=3; Cd=4.5; break;
+          case 'SMF': R=8; Omega=3; Cd=5.5; break;
+          case 'SW':  R=5; Omega=2.5; Cd=5; break; 
+        }
+        
+        document.getElementById('dispR').textContent = R;
+        document.getElementById('dispOmega').textContent = Omega;
+        document.getElementById('dispCd').textContent = Cd;
+      }
+
+      // --- MODEL LOGIC ---
       let floorCount = 0;
 
-      function addNewFloor(defaultHeight = 3.5, defaultLoad = 1.5, defaultPoint = 0) {
+      function addNewFloor(defaultHeight = 3.5, defaultLoad = 1.5) {
         floorCount++;
         const container = document.getElementById('floorContainer');
         const div = document.createElement('div');
         div.className = 'floor-card';
         div.id = 'floor-' + floorCount;
         
+        // [แก้ไข] ลบช่อง Point Load ออก
         div.innerHTML = `
           <div class="floor-header">
             <span class="floor-title">Level ${floorCount}</span>
-            <button class="btn-delete" onclick="removeFloor(this)" title="Remove this floor">✕</button>
+            <button class="btn-delete" onclick="removeFloor(this)" title="Remove">✕</button>
           </div>
           <div class="row-inputs">
             <div class="col col-height-wrapper">
-              <span class="mini-label">Col Height (m)</span>
+              <span class="mini-label">Height (m)</span>
               <input type="number" step="0.1" class="num-input inp-height" value="${defaultHeight}">
             </div>
             <div class="col">
               <span class="mini-label">Load (T/m)</span>
               <input type="number" step="0.1" class="num-input inp-load" value="${defaultLoad}">
-            </div>
-            <div class="col">
-              <span class="mini-label">Point Load</span>
-              <input type="number" step="0.1" class="num-input inp-point" value="${defaultPoint}">
             </div>
           </div>
         `;
@@ -164,11 +302,8 @@
       function updateFloorLabels() {
         const cards = document.querySelectorAll('.floor-card');
         floorCount = cards.length;
-        
         cards.forEach((card, index) => {
           const title = card.querySelector('.floor-title');
-          
-          // ถ้าเป็นใบสุดท้าย ให้เป็น Roof และซ่อน Height Input
           if (index === cards.length - 1) {
              title.textContent = `Roof / Deck (Top)`;
              card.classList.add('is-roof'); 
@@ -180,45 +315,50 @@
       }
 
       function collectAndGenerate() {
-        const btn = document.querySelector('.btn-generate');
+        const btn = document.querySelector('#btnDraw');
         const errorMsg = document.getElementById('errorMsg');
         
+        // 1. รับค่า Grid
         const spanX = document.getElementById('globalSpanX').value;
         const spanY = document.getElementById('globalSpanY').value;
+        
+        // 2. รับค่า Seismic Config
+        const seismicParams = {
+          ss: document.getElementById('dispSs').textContent,
+          s1: document.getElementById('dispS1').textContent,
+          siteClass: document.getElementById('selSoilClass').value,
+          riskCat: document.getElementById('selRiskCat').value,
+          R: document.getElementById('dispR').textContent,
+          Ie: document.getElementById('dispIe').textContent
+        };
+
+        // 3. รับค่า Floors
         const cards = document.querySelectorAll('.floor-card');
         
         if (cards.length === 0) {
-          errorMsg.textContent = "Please add at least 1 level.";
+          errorMsg.textContent = "Add at least 1 level.";
           errorMsg.style.display = 'block';
           return;
         }
 
         let heightsArr = [];
         let loadsArr = [];
-        let pointsArr = [];
 
         cards.forEach((card, index) => {
           const h = card.querySelector('.inp-height').value || 0;
           const l = card.querySelector('.inp-load').value || 0;
-          const p = card.querySelector('.inp-point').value || 0;
           
-          // Logic: ถ้าเป็นใบสุดท้าย (Roof) เราจะไม่เก็บค่า Height ส่งไป 
-          // เพื่อให้จำนวน Height = จำนวนชั้น แต่ Load มีจำนวนเท่ากับ คานทั้งหมด (ชั้น+หลังคา)
           if (index < cards.length - 1) {
             heightsArr.push(h);
           }
-          
-          // แต่ Load และ PointLoad ต้องเก็บของ Roof ด้วย
           loadsArr.push(l);
-          pointsArr.push(p);
         });
 
         const heightStr = heightsArr.join(',');
         const loadsStr = loadsArr.join(',');
-        const pointsStr = pointsArr.join(',');
 
         btn.disabled = true;
-        btn.textContent = "Processing...";
+        btn.textContent = "Calculating ELF...";
         errorMsg.style.display = 'none';
 
         google.script.run
@@ -232,13 +372,76 @@
             errorMsg.textContent = "Error: " + err.message;
             errorMsg.style.display = 'block';
           })
-          .receiveFormInput(spanX, heightStr, loadsStr, spanY, pointsStr);
+          .receiveFormInput(spanX, heightStr, loadsStr, spanY, seismicParams);
+      }
+
+      // --- SEISMIC DATA FETCHING ---
+      let dbData = [];
+
+      function loadSeismicData() {
+        google.script.run.withSuccessHandler(data => {
+          dbData = data;
+          populateProvinces();
+        }).getSeismicDatabase();
+      }
+
+      function populateProvinces() {
+        const selProv = document.getElementById('selProvince');
+        selProv.innerHTML = '<option value="">-- Select Province --</option>';
+        const provinces = [...new Set(dbData.map(row => row[0]))].sort();
+        
+        provinces.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p;
+          opt.textContent = p;
+          selProv.appendChild(opt);
+        });
+      }
+
+      function onProvinceChange() {
+        const prov = document.getElementById('selProvince').value;
+        const selAmp = document.getElementById('selAmphoe');
+        
+        selAmp.innerHTML = '<option value="">-- Select District --</option>';
+        document.getElementById('dispSs').textContent = '-';
+        document.getElementById('dispS1').textContent = '-';
+
+        if (!prov) {
+          selAmp.disabled = true;
+          return;
+        }
+
+        const amphoes = dbData.filter(row => row[0] === prov).map(row => row[1]).sort();
+        
+        amphoes.forEach(a => {
+          const opt = document.createElement('option');
+          opt.value = a;
+          opt.textContent = a;
+          selAmp.appendChild(opt);
+        });
+        
+        selAmp.disabled = false;
+      }
+
+      function onAmphoeChange() {
+        const prov = document.getElementById('selProvince').value;
+        const amp = document.getElementById('selAmphoe').value;
+        
+        if (!prov || !amp) return;
+
+        const found = dbData.find(row => row[0] === prov && row[1] === amp);
+        if (found) {
+          document.getElementById('dispSs').textContent = found[2];
+          document.getElementById('dispS1').textContent = found[3];
+        }
       }
 
       window.onload = function() {
-        addNewFloor(3.5, 1.5, 1.4); // Floor 1
-        addNewFloor(3.5, 2.0, 1.4); // Floor 2
-        addNewFloor(0, 1.0, 1.0);   // Roof (Height ไม่ต้องใส่ก็ได้ เพราะถูกซ่อนและไม่ถูกส่งไป)
+        addNewFloor(3.5, 1.5); 
+        addNewFloor(3.5, 2.0); 
+        addNewFloor(0, 1.0);
+        
+        loadSeismicData();
       };
     </script>
   </body>
