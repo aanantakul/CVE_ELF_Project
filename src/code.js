@@ -1,5 +1,5 @@
 /**
- * Building Structure Generator & Seismic Analyzer - V26
+ * Building Structure Generator & Seismic Analyzer - V37 (Fix Missing Shear Scale)
  */
 
 const CONFIG = {
@@ -10,12 +10,14 @@ const CONFIG = {
   resolution: 0.5,      
   minPadding: 10,       
   stumpHeight: 2,
-  pointLoadScale: 4,    
+  pointLoadScale: 4,  // Scale แรงกระทำด้านข้าง (Fx): 1 ตัน = 4 ช่อง
+  shearLoadScale: 2,  // Scale แรงเฉือน (V): 1 ตัน = 2 ช่อง
   colors: {
     beam: "#37474f", fillSide: "#f3e5f5", fillTop: "#e1f5fe",
     gridLabel: "#b71c1c", dimText: "#0d47a1", graphLine: "#eceff1",
     labelBg: "#ffffff", support: "#424242",
     loadArrow: "#b71c1c", loadText: "#b71c1c",
+    shearArrow: "#00695c", shearText: "#004d40",
     tableHeader: "#1565c0", tableRowOdd: "#ffffff", tableRowEven: "#f5f5f5"
   }
 };
@@ -52,7 +54,7 @@ function receiveFormInput(spanXStr, heightStr, loadsStr, spanYStr, seismicParams
     pointLoadsStr = calcResult.pointLoadsStr;
   }
   
-  generateBlueprintFromData(spanXStr, heightStr, loadsStr, spanYStr, pointLoadsStr);
+  generateBlueprintFromData(spanXStr, heightStr, loadsStr, spanYStr, pointLoadsStr, calcResult);
 
   if (calcResult) {
     createCalculationSheet(calcResult);
@@ -132,12 +134,10 @@ function getFa(siteClass, Ss) {
   const grid = { "A": [0.8,0.8,0.8,0.8,0.8], "B": [1.0,1.0,1.0,1.0,1.0], "C": [1.2,1.2,1.1,1.0,1.0], "D": [1.6,1.4,1.2,1.1,1.0], "E": [2.5,1.7,1.2,0.9,0.9], "F": [1,1,1,1,1] };
   return interpolate(Ss, [0.25, 0.50, 0.75, 1.00, 1.25], grid[siteClass] || grid["D"]);
 }
-
 function getFv(siteClass, S1) {
   const grid = { "A": [0.8,0.8,0.8,0.8,0.8], "B": [1.0,1.0,1.0,1.0,1.0], "C": [1.7,1.6,1.5,1.4,1.3], "D": [2.4,2.0,1.8,1.6,1.5], "E": [3.5,3.2,2.8,2.4,2.4], "F": [1,1,1,1,1] };
   return interpolate(S1, [0.1, 0.2, 0.3, 0.4, 0.5], grid[siteClass] || grid["D"]);
 }
-
 function interpolate(x, x_arr, y_arr) {
   if (x <= x_arr[0]) return y_arr[0];
   if (x >= x_arr[x_arr.length - 1]) return y_arr[y_arr.length - 1];
@@ -190,6 +190,8 @@ function createCalculationSheet(result) {
   const paramRange = sheet.getRange(r, 1, paramsData.length, 3);
   paramRange.setValues(paramsData).setBorder(true, true, true, true, true, true, "#999999", SpreadsheetApp.BorderStyle.SOLID);
   sheet.getRange(r, 1, 1, 3).setBackground(CONFIG.colors.tableHeader).setFontColor("white").setFontWeight("bold");
+  sheet.getRange(r, 2, paramsData.length, 1).setHorizontalAlignment("left"); // Left align Value column
+
   r += paramsData.length + 2;
 
   sheet.getRange(r, 1).setValue("VERTICAL DISTRIBUTION OF SEISMIC FORCES").setFontWeight("bold");
@@ -212,9 +214,9 @@ function createCalculationSheet(result) {
 }
 
 // ==========================================
-// 🎨 DRAWING LOGIC
+// 🎨 DRAWING LOGIC (Blueprint)
 // ==========================================
-function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawPointLoads) {
+function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawPointLoads, calcResult) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let planSheet = ss.getSheetByName(CONFIG.sheetPlan);
   if (!planSheet) { planSheet = ss.insertSheet(CONFIG.sheetPlan); } else { planSheet.clear(); }
@@ -237,10 +239,14 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   const totalHeightCells = heights_cells.reduce((a, b) => a + b, 0) + spansY_cells.reduce((a, b) => a + b, 0);
   
   const maxPointLoad = Math.max(...pointLoads_val, 0);
-  
   const requiredLeftSpace = Math.ceil(maxPointLoad * CONFIG.pointLoadScale) + 15; 
   
-  const canvasWidth = Math.max(drawingWidth + requiredLeftSpace + CONFIG.minPadding, 80); 
+  // คำนวณพื้นที่ขวาสำหรับ Shear V (ใช้ shearLoadScale)
+  let maxShear = 0;
+  if (calcResult && calcResult.params && calcResult.params.V) maxShear = calcResult.params.V;
+  const requiredRightSpace = Math.ceil(maxShear * CONFIG.shearLoadScale) + 15; 
+
+  const canvasWidth = Math.max(drawingWidth + requiredLeftSpace + requiredRightSpace + CONFIG.minPadding, 80); 
   const totalRowsNeeded = totalHeightCells + 50; 
 
   if (canvasWidth > planSheet.getMaxColumns()) planSheet.insertColumnsAfter(planSheet.getMaxColumns(), canvasWidth - planSheet.getMaxColumns());
@@ -248,6 +254,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   
   planSheet.setColumnWidths(1, canvasWidth, CONFIG.cellSizePx);
   planSheet.setRowHeights(1, totalRowsNeeded, CONFIG.cellSizePx);
+  
   planSheet.getRange(1, 1, totalRowsNeeded, canvasWidth).setBorder(true, true, true, true, true, true, CONFIG.colors.graphLine, SpreadsheetApp.BorderStyle.DOTTED);
 
   let startCol = Math.floor((canvasWidth - drawingWidth) / 2);
@@ -267,7 +274,20 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
     const pointLoad = pointLoads_val[levelIndex] || 0; 
 
     createLabelBox(planSheet, currentRow + Math.floor(hCells/2) - 1, startCol - 3, `${hMeters}m`, CONFIG.colors.dimText);
+    
+    // Draw Left Point Load (Fx)
     if (pointLoad > 0) drawLateralLoad(planSheet, currentRow, startCol, pointLoad);
+
+    // Draw Right Shear Force (Vx)
+    if (calcResult && calcResult.levels) {
+       const shearIndex = (calcResult.levels.length - 1) - index;
+       const shearVal = calcResult.levels[shearIndex] ? calcResult.levels[shearIndex].Vx : 0;
+       
+       if (shearVal > 0) {
+         const rightEdgeCol = startCol + drawingWidth;
+         drawShearForceRight(planSheet, currentRow, rightEdgeCol, hCells, shearVal);
+       }
+    }
 
     for (let i = 0; i < spansX_cells.length; i++) {
       const wCells = spansX_cells[i];
@@ -279,8 +299,10 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
       }
       currentX += wCells;
     }
+    
     const floorNum = heights_cells.length - index;
-    createLabelBox(planSheet, currentRow + Math.floor(hCells/2) - 1, currentX + 1, `FL ${floorNum}`, CONFIG.colors.gridLabel);
+    createLabelBox(planSheet, currentRow + 1, currentX - 3, `FL ${floorNum}`, CONFIG.colors.gridLabel);
+
     currentRow += hCells;
   });
 
@@ -350,33 +372,43 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
 }
 
 // --- HELPERS ---
+
+// [แก้ไข] ใช้ shearLoadScale
+function drawShearForceRight(sheet, row, col, height, val) {
+  const scale = CONFIG.shearLoadScale; // 0.5
+  const arrowLength = Math.max(3, Math.ceil(val * scale));
+  const dashCount = Math.max(1, arrowLength); 
+  const line = "─".repeat(dashCount); 
+  const text = `←${line} V = ${val.toFixed(2)}T`;
+
+  const arrowRow = row + Math.floor(height / 2);
+  const totalWidth = arrowLength + 10; 
+
+  // วาดที่ตำแหน่ง col (ชิดผนัง)
+  const range = sheet.getRange(arrowRow, col, 1, totalWidth);
+  range.merge();
+  range.setValue(text);
+  range.setHorizontalAlignment("left").setVerticalAlignment("middle");
+  range.setFontColor(CONFIG.colors.shearArrow).setFontWeight("bold").setFontSize(9);
+}
+
 function drawLateralLoad(sheet, beamRow, startCol, val) {
   const scale = CONFIG.pointLoadScale; 
   const arrowLength = Math.max(3, Math.ceil(val * scale));
-  
-  // [แก้] เพิ่ม Extra Space จาก 3 เป็น 6 ช่อง
   const extraSpace = 6; 
   const arrowStartCol = startCol - arrowLength - extraSpace;
   const totalWidth = arrowLength + extraSpace;
-
   if (arrowStartCol > 0) {
     const targetRow = beamRow - 1; 
     const range = sheet.getRange(targetRow, arrowStartCol, 2, totalWidth); 
     range.merge();
-    
     const dashCount = Math.max(1, arrowLength); 
     const line = "─".repeat(dashCount); 
-    
-    // จัด Format ทศนิยม 3 ตำแหน่ง
     const valStr = (typeof val === 'number') ? val.toFixed(3) : val;
-    const text = `${valStr}T ${line}→`;
-    
-    range.setValue(text);
-    range.setHorizontalAlignment("right").setVerticalAlignment("middle");
-    range.setFontColor(CONFIG.colors.loadArrow).setFontWeight("bold").setFontSize(9);
+    const text = `F = ${valStr}T ${line}→`;
+    range.setValue(text).setHorizontalAlignment("right").setVerticalAlignment("middle").setFontColor(CONFIG.colors.loadArrow).setFontWeight("bold").setFontSize(9);
   }
 }
-
 function drawLoadArrows(sheet, beamRow, startCol, width) {
   const arrowRow = beamRow - 1;
   if (arrowRow > 0) {
@@ -385,7 +417,6 @@ function drawLoadArrows(sheet, beamRow, startCol, width) {
       .setHorizontalAlignment("center").setVerticalAlignment("bottom").setFontColor(CONFIG.colors.loadArrow).setFontSize(8).setFontWeight("bold");
   }
 }
-
 function drawLoadLabel(sheet, beamRow, startCol, width, val) {
   const textRow = beamRow - 2;
   if (textRow > 0) {
@@ -393,14 +424,12 @@ function drawLoadLabel(sheet, beamRow, startCol, width, val) {
     range.merge().setValue(`${val} T/m`).setHorizontalAlignment("center").setVerticalAlignment("middle").setFontColor(CONFIG.colors.loadText).setFontSize(9).setFontWeight("bold");
   }
 }
-
 function createLabelBox(sheet, row, col, text, color, align = "center", isBold = true) {
   if (row < 1 || col < 1) return; 
   const range = sheet.getRange(row, col, 2, 2); 
   range.merge().setValue(text).setFontColor(color).setBackground(CONFIG.colors.labelBg).setBorder(true, true, true, true, null, null, "#dddddd", SpreadsheetApp.BorderStyle.SOLID).setHorizontalAlignment(align).setVerticalAlignment("middle").setFontSize(8);
   if (isBold) range.setFontWeight("bold");
 }
-
 function drawFixedSupport(sheet, row, centerX) {
   const width = 4; const height = 2; const startX = centerX - Math.floor(width / 2);
   if (startX < 1) return;
@@ -410,7 +439,6 @@ function drawFixedSupport(sheet, row, centerX) {
   const soilRange = sheet.getRange(soilRow, startX - 1, 1, width + 2); 
   soilRange.merge().setValue("/ / / / / / / / / / / /").setHorizontalAlignment("center").setVerticalAlignment("middle").setFontSize(8).setFontColor("#757575").setFontWeight("bold").setFontWeight("italic");
 }
-
 function drawColumnStump(sheet, row, x, height) {
   sheet.getRange(row, x, height, 1).setBorder(null, true, null, null, null, null, CONFIG.colors.beam, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 }

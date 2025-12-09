@@ -190,7 +190,6 @@
           <div id="dispCd" class="val-num">2.5</div>
         </div>
       </div>
-
     </div>
 
     <div id="TabModel" class="tab-content">
@@ -265,14 +264,14 @@
       // --- MODEL LOGIC ---
       let floorCount = 0;
 
-      function addNewFloor(defaultHeight = 3.5, defaultLoad = 1.5) {
+      // [แก้ไข] ค่าเริ่มต้น: Height=3.5, Load=2.0
+      function addNewFloor(defaultHeight = 3.5, defaultLoad = 2.0) {
         floorCount++;
         const container = document.getElementById('floorContainer');
         const div = document.createElement('div');
         div.className = 'floor-card';
         div.id = 'floor-' + floorCount;
         
-        // [แก้ไข] ลบช่อง Point Load ออก
         div.innerHTML = `
           <div class="floor-header">
             <span class="floor-title">Level ${floorCount}</span>
@@ -318,11 +317,9 @@
         const btn = document.querySelector('#btnDraw');
         const errorMsg = document.getElementById('errorMsg');
         
-        // 1. รับค่า Grid
         const spanX = document.getElementById('globalSpanX').value;
         const spanY = document.getElementById('globalSpanY').value;
         
-        // 2. รับค่า Seismic Config
         const seismicParams = {
           ss: document.getElementById('dispSs').textContent,
           s1: document.getElementById('dispS1').textContent,
@@ -332,9 +329,7 @@
           Ie: document.getElementById('dispIe').textContent
         };
 
-        // 3. รับค่า Floors
         const cards = document.querySelectorAll('.floor-card');
-        
         if (cards.length === 0) {
           errorMsg.textContent = "Add at least 1 level.";
           errorMsg.style.display = 'block';
@@ -436,10 +431,13 @@
         }
       }
 
+      // [แก้ไข] สร้าง 3 ชั้น + 1 Roof
+      // กำหนดค่า Default Roof ให้มี Height 3.5m เผื่อไว้ (แม้จะซ่อน) เพื่อให้ตอนเพิ่มชั้นต่อไม่เป็น 0
       window.onload = function() {
-        addNewFloor(3.5, 1.5); 
-        addNewFloor(3.5, 2.0); 
-        addNewFloor(0, 1.0);
+        addNewFloor(3.5, 2.0); // Floor 1
+        addNewFloor(3.5, 2.0); // Floor 2
+        addNewFloor(3.5, 2.0); // Floor 3
+        addNewFloor(3.5, 2.0); // Roof (ใส่ 3.5 เผื่อไว้)
         
         loadSeismicData();
       };
