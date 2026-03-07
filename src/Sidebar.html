@@ -3,108 +3,69 @@
   <head>
     <base target="_top">
     <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-      /* --- GLOBAL RESET & FONT --- */
-      body { padding: 0; font-family: 'Roboto', sans-serif; background: #f0f2f5; color: #333; overflow-x: hidden; }
+      /* --- GLOBAL --- */
+      html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+      body { font-family: 'Sarabun', sans-serif; background: #f0f2f5; color: #333; display: flex; flex-direction: column; font-size: 13px; }
       * { box-sizing: border-box; }
 
-      /* --- HEADER & TABS --- */
-      .sticky-header { position: sticky; top: 0; z-index: 100; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      /* --- HEADER --- */
+      .sticky-header { flex: 0 0 auto; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
       .tab-header { display: flex; border-bottom: 1px solid #ddd; }
-      
-      .tab-btn {
-        flex: 1; display: flex; justify-content: center; align-items: center;
-        padding: 10px 4px; font-size: 12px;   
-        border: none; background: none; font-weight: 700; color: #666; cursor: pointer;
-        border-bottom: 3px solid transparent; transition: 0.2s; 
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
+      .tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 5px; font-size: 14px; font-family: 'Sarabun', sans-serif; font-weight: 700; color: #666; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
       .tab-btn:hover { background: #f5f5f5; color: #1a73e8; }
       .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; background: #f0f7ff; }
       
-      .tab-content { display: none; padding: 10px; padding-bottom: 70px; animation: fadeIn 0.3s; }
+      /* --- CONTENT --- */
+      .content-wrapper { flex: 1 1 auto; overflow-y: auto; padding: 12px; padding-bottom: 20px; position: relative; }
+      .tab-content { display: none; animation: fadeIn 0.3s; }
       .tab-content.active { display: block; }
-
       @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       
-      /* --- INPUT STYLES --- */
-      .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #5f6368; margin: 12px 0 6px 0; letter-spacing: 0.5px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; }
+      /* --- UI ELEMENTS --- */
+      .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #5f6368; margin: 12px 0 6px 0; letter-spacing: 0.5px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; }
       .input-group { background: #fff; border-radius: 6px; padding: 8px; border: 1px solid #dadce0; margin-bottom: 8px; }
-      .input-label { display: block; font-size: 11px; font-weight: 700; color: #1a73e8; margin-bottom: 4px; }
-      
-      /* --- FORM ELEMENTS --- */
-      .text-input, select { 
-        width: 100%; padding: 6px 30px 6px 10px;
-        border: 1px solid #ccc; border-radius: 4px; 
-        font-size: 12px; background-color: #fff; color: #333;
-        transition: border 0.2s, box-shadow 0.2s;
-        cursor: pointer;
-        -webkit-appearance: none; -moz-appearance: none; appearance: none;
-        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        background-size: 8px auto;
-      }
-      select:hover { border-color: #1a73e8; }
-      select:focus, .text-input:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
-      select:disabled { background-color: #f1f3f4; color: #999; cursor: not-allowed; background-image: none; }
-      
-      /* --- PARAMETER BOX --- */
+      .input-label { display: block; font-size: 12px; font-weight: 700; color: #1a73e8; margin-bottom: 4px; }
+      .text-input, select { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-family: 'Sarabun', sans-serif; background-color: #fff; color: #333; cursor: pointer; text-align: left; -webkit-appearance: menulist; -moz-appearance: menulist; appearance: menulist; }
+      .text-input:focus, select:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.1); }
+      optgroup { font-weight: 700; color: #1a73e8; font-style: normal; }
+      option { color: #333; font-weight: 400; }
+
       .param-grid { display: flex; gap: 5px; margin-top: 5px; }
-      .value-box { 
-        flex: 1; background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 4px; 
-        padding: 6px; text-align: center; 
-      }
-      .val-label { font-size: 9px; color: #1a73e8; font-weight: bold; text-transform: uppercase; }
+      .value-box { flex: 1; background: #e8f0fe; border: 1px solid #d2e3fc; border-radius: 4px; padding: 6px; text-align: center; }
+      .val-label { font-size: 10px; color: #1a73e8; font-weight: bold; text-transform: uppercase; }
       .val-num { font-size: 14px; font-weight: bold; color: #174ea6; }
-      #dispR, #dispOmega, #dispCd { font-size: 18px; }
+      
+      .sdc-box { background: #e8f0fe; border: 2px solid #1a73e8; border-radius: 6px; padding: 8px; text-align: center; margin-top: 10px; }
+      .sdc-title { font-size: 11px; font-weight: 700; color: #1a73e8; text-transform: uppercase; }
+      .sdc-val { font-size: 20px; font-weight: 800; color: #0d47a1; margin-top: 2px; }
+      .sdc-desc { font-size: 11px; color: #555; }
+      .warning-box { margin-top:5px; padding: 8px; background-color: #fce8e6; border: 1px solid #d93025; border-radius: 4px; color: #c5221f; font-size: 12px; display: none; line-height: 1.4; }
+      
+      #basinBar { margin-top: 8px; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; text-align: center; display: none; width: 100%; }
+      .basin-in { background-color: #fff3e0; color: #e65100; border: 1px solid #ff9800; }
+      .basin-out { background-color: #e6f4ea; color: #137333; border: 1px solid #34a853; }
 
-      /* --- DYNAMIC FLOOR CARD --- */
       .floor-list { display: flex; flex-direction: column-reverse; gap: 8px; }
-      .floor-card {
-        background: #fff; border-radius: 6px; border-left: 4px solid #1a73e8;
-        padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;
-      }
+      .floor-card { background: #fff; border-radius: 6px; border-left: 4px solid #1a73e8; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; }
       .floor-card.is-roof { border-left-color: #d93025; }
-      .floor-card.is-roof .col-height-wrapper { visibility: hidden; }
-      .floor-card.is-roof .floor-title { color: #d93025; } 
-      .floor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .floor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; width: 100%; border-bottom: 1px solid #eee; padding-bottom: 4px;}
       .floor-title { font-weight: 700; font-size: 13px; color: #202124; }
-      
-      .btn-delete { 
-        background: none; border: none; color: #d93025; cursor: pointer; 
-        font-size: 14px; padding: 2px 6px; border-radius: 4px; 
-        transition: background 0.2s;
-      }
-      .btn-delete:hover { background: #ffebee; }
-      
-      .row-inputs { display: flex; gap: 6px; }
+      .btn-delete { background: none; border: none; color: #d93025; cursor: pointer; font-size: 16px; font-weight: bold; padding: 0 5px; margin-left: auto; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+      .btn-delete:hover { background-color: #fce8e6; }
+      .row-inputs { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
       .col { flex: 1; min-width: 0; }
-      .mini-label { font-size: 9px; color: #5f6368; margin-bottom: 2px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .num-input { width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px; }
-      .num-input:focus { border-color: #1a73e8; outline: none; }
+      .mini-label { font-size: 10px; color: #5f6368; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;}
+      .num-input { width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; font-family: 'Sarabun', sans-serif; }
 
-      /* --- FOOTER ACTIONS --- */
-      .footer-actions {
-        position: fixed; bottom: 0; left: 0; right: 0;
-        background: #fff; padding: 8px; border-top: 1px solid #ddd;
-        display: flex; gap: 8px; z-index: 200;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-        display: none; 
-      }
-      .btn-add, .btn-generate {
-        display: flex; justify-content: center; align-items: center;
-        border: none; padding: 10px 4px; border-radius: 4px; 
-        font-weight: 700; font-size: 12px; cursor: pointer; 
-        white-space: nowrap; transition: 0.2s;
-      }
+      .footer-actions { flex: 0 0 auto; background: #fff; padding: 10px; border-top: 1px solid #ddd; display: flex; gap: 8px; z-index: 20; display: none; }
+      .btn-add, .btn-generate { display: flex; align-items: center; justify-content: center; border: none; padding: 10px; border-radius: 4px; font-weight: 700; font-size: 13px; font-family: 'Sarabun', sans-serif; cursor: pointer; white-space: nowrap; transition: 0.2s; line-height: 1.5; height: 38px; }
       .btn-add { flex: 1; background: #e8f0fe; color: #1a73e8; }
       .btn-add:hover { background: #d2e3fc; }
       .btn-generate { flex: 2; background: #1a73e8; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
       .btn-generate:hover { background: #1557b0; }
-      
-      .error-msg { color: #d93025; font-size: 11px; text-align: center; margin-top: 5px; display: none; }
+      .error-msg { color: #d93025; font-size: 12px; text-align: center; margin-top: 5px; display: none; }
     </style>
   </head>
   <body>
@@ -112,335 +73,664 @@
     <div class="sticky-header">
       <div class="tab-header">
         <button class="tab-btn active" onclick="switchTab('TabSeismic')">🌍 Seismic</button>
-        <button class="tab-btn" onclick="switchTab('TabModel')">🏗️ Model</button>
+        <button class="tab-btn" onclick="switchTab('TabModel')">🏗️ Model & Stability</button>
       </div>
     </div>
 
-    <div id="TabSeismic" class="tab-content active">
-      
-      <div class="section-title">1. Location (DPT 1301/1302-61)</div>
-      <div class="input-group">
-        <label class="input-label">Province (จังหวัด)</label>
-        <select id="selProvince" onchange="onProvinceChange()"><option>Loading...</option></select>
-      </div>
-      <div class="input-group">
-        <label class="input-label">District (อำเภอ)</label>
-        <select id="selAmphoe" onchange="onAmphoeChange()" disabled><option>-</option></select>
-      </div>
-      <div class="param-grid">
-        <div class="value-box">
-          <div class="val-label">Ss</div>
-          <div id="dispSs" class="val-num">-</div>
+    <div class="content-wrapper">
+      <div id="TabSeismic" class="tab-content active">
+        <div class="section-title">1. Location (DPT 1301/1302-61)</div>
+        <div class="input-group">
+          <label class="input-label">Province (จังหวัด)</label>
+          <select id="selProvince" onchange="onProvinceChange()"><option>Loading...</option></select>
         </div>
-        <div class="value-box">
-          <div class="val-label">S1</div>
-          <div id="dispS1" class="val-num">-</div>
+        <div class="input-group">
+          <label class="input-label">District (อำเภอ)</label>
+          <select id="selAmphoe" onchange="onAmphoeChange()" disabled><option>-</option></select>
+          <div id="basinBar"></div>
+        </div>
+        <div class="param-grid">
+          <div class="value-box">
+            <div id="lblParam1" class="val-label">Ss</div>
+            <div id="dispVal1" class="val-num">-</div>
+          </div>
+          <div class="value-box">
+            <div id="lblParam2" class="val-label">S1</div>
+            <div id="dispVal2" class="val-num">-</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:15px;">2. Site & Building Config</div>
+        <div class="input-group">
+          <label class="input-label">Soil Site Class (ชั้นดิน)</label>
+          <select id="selSoilClass" onchange="recalcSeismicParams()">
+            <option value="A">A - Hard Rock (หินแข็ง)</option>
+            <option value="B">B - Rock (หิน)</option>
+            <option value="C">C - Very Dense Soil (ดินแน่นมาก)</option>
+            <option value="D" selected>D - Stiff Soil (ดินแข็ง) *Default</option>
+            <option value="E">E - Soft Clay (ดินอ่อน) *Bangkok</option>
+            <option value="F">F - Soil Requiring Response Analysis</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Risk Category (ความสำคัญอาคาร)</label>
+          <select id="selRiskCat" onchange="recalcSeismicParams()">
+            <option value="I">I - Low Hazard (น้อย)</option>
+            <option value="II" selected>II - General (ทั่วไป)</option>
+            <option value="III">III - High Occupancy (สูง)</option>
+            <option value="IV">IV - Essential (สูงมาก)</option>
+          </select>
+        </div>
+        <div class="param-grid">
+          <div class="value-box" style="background:#fff3e0; border-color:#ffe0b2;">
+            <div class="val-label" style="color:#e65100;">Ie (Importance)</div>
+            <div id="dispIe" class="val-num" style="color:#ef6c00;">1.00</div>
+          </div>
+        </div>
+
+        <div id="sdcContainer" class="sdc-box">
+          <div class="sdc-title">Seismic Design Category</div>
+          <div id="dispSDC" class="sdc-val">-</div>
+          <div id="dispSDCDesc" class="sdc-desc">Please select location first</div>
+        </div>
+
+        <div class="section-title" style="margin-top:15px;">3. Structural System</div>
+        <div class="input-group">
+          <label class="input-label">Resisting System (ระบบรับแรง)</label>
+          <select id="selSystem" onchange="updateSystemParams()">
+            <optgroup label="1. ระบบกำแพงรับน้ำหนักบรรทุกแนวดิ่ง">
+              <option value="1_1">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนแบบธรรมดา</option>
+              <option value="1_2">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนแบบพิเศษ</option>
+              <option value="1_3">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนหล่อสำเร็จแบบธรรมดา</option>
+              <option value="1_4">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนหล่อสำเร็จความเหนียวปานกลาง</option>
+            </optgroup>
+            <optgroup label="2. ระบบโครงอาคาร">
+              <option value="2_1">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนแบบรายละเอียดพิเศษ</option>
+              <option value="2_2">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนแบบธรรมดา</option>
+              <option value="2_3">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนหล่อสำเร็จแบบธรรมดา</option>
+              <option value="2_4">&nbsp;&nbsp;&nbsp;&nbsp;กำแพงรับแรงเฉือนหล่อสำเร็จความเหนียวปานกลาง</option>
+            </optgroup>
+            <optgroup label="3. ระบบโครงต้านแรงดัด">
+              <option value="3_1">&nbsp;&nbsp;&nbsp;&nbsp;โครงต้านแรงดัด ค.ส.ล. ความเหนียวพิเศษ (SMF)</option>
+              <option value="3_2">&nbsp;&nbsp;&nbsp;&nbsp;โครงต้านแรงดัด ค.ส.ล. ความเหนียวปานกลาง (IMF)</option>
+              <option value="3_3" selected>&nbsp;&nbsp;&nbsp;&nbsp;โครงต้านแรงดัด ค.ส.ล. แบบธรรมดา (OMF)</option>
+            </optgroup>
+            <optgroup label="4. ระบบโครงสร้างแบบผสม (Dual System with SMF)">
+              <option value="4_1">&nbsp;&nbsp;&nbsp;&nbsp;ร่วมกับกำแพงรับแรงเฉือนแบบรายละเอียดพิเศษ</option>
+              <option value="4_2">&nbsp;&nbsp;&nbsp;&nbsp;ร่วมกับกำแพงรับแรงเฉือนแบบธรรมดา</option>
+            </optgroup>
+            <optgroup label="5. ระบบโครงสร้างแบบผสม (Dual System with IMF)">
+              <option value="5_1">&nbsp;&nbsp;&nbsp;&nbsp;ร่วมกับกำแพงรับแรงเฉือนแบบรายละเอียดพิเศษ</option>
+              <option value="5_2">&nbsp;&nbsp;&nbsp;&nbsp;ร่วมกับกำแพงรับแรงเฉือนแบบธรรมดา</option>
+            </optgroup>
+            <optgroup label="6. ระบบปฏิสัมพันธ์">
+              <option value="6_1">&nbsp;&nbsp;&nbsp;&nbsp;โครงต้านแรงดัดธรรมดา + กำแพงรับแรงเฉือนธรรมดา</option>
+            </optgroup>
+          </select>
+          <div id="sysWarning" class="warning-box"></div>
+        </div>
+        <div class="param-grid">
+          <div class="value-box"><div class="val-label">R</div><div id="dispR" class="val-num">3</div></div>
+          <div class="value-box"><div class="val-label">Ω0</div><div id="dispOmega" class="val-num">3</div></div>
+          <div class="value-box"><div class="val-label">Cd</div><div id="dispCd" class="val-num">2.5</div></div>
         </div>
       </div>
 
-      <div class="section-title" style="margin-top:15px;">2. Site & Building Config</div>
-      <div class="input-group">
-        <label class="input-label">Soil Site Class (ชั้นดิน)</label>
-        <select id="selSoilClass">
-          <option value="A">A - Hard Rock (หินแข็ง)</option>
-          <option value="B">B - Rock (หิน)</option>
-          <option value="C">C - Very Dense Soil (ดินแน่นมาก)</option>
-          <option value="D" selected>D - Stiff Soil (ดินแข็ง) *Default</option>
-          <option value="E">E - Soft Clay (ดินอ่อน)</option>
-          <option value="F">F - Soil Requiring Response Analysis</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label class="input-label">Risk Category (ความสำคัญอาคาร)</label>
-        <select id="selRiskCat" onchange="updateImportanceFactor()">
-          <option value="I">I - Low Hazard (น้อย)</option>
-          <option value="II" selected>II - General (ทั่วไป)</option>
-          <option value="III">III - High Occupancy (สูง)</option>
-          <option value="IV">IV - Essential (สูงมาก)</option>
-        </select>
-      </div>
-      <div class="param-grid">
-        <div class="value-box" style="background:#fff3e0; border-color:#ffe0b2;">
-          <div class="val-label" style="color:#e65100;">Ie (Importance)</div>
-          <div id="dispIe" class="val-num" style="color:#ef6c00;">1.00</div>
+      <div id="TabModel" class="tab-content">
+        <div class="section-title">Grid Config</div>
+        <div class="input-group">
+          <label class="input-label">SPAN X (Horizontal / ทิศ E-W)</label>
+          <input type="text" id="globalSpanX" class="text-input" value="4,4,4" placeholder="e.g. 4,4,4" oninput="calculateGridArea()">
         </div>
-      </div>
+        <div class="input-group">
+          <label class="input-label">SPAN Y (Depth / ทิศ N-S)</label>
+          <input type="text" id="globalSpanY" class="text-input" value="4,3,4" placeholder="e.g. 4,3" oninput="calculateGridArea()">
+        </div>
+        <div class="param-grid">
+          <div class="value-box" style="background:#e0f2f1; border-color:#80cbc4;">
+            <div class="val-label" style="color:#00695c;">Total Floor Area</div>
+            <div id="dispArea" class="val-num" style="color:#004d40;">- m²</div>
+          </div>
+        </div>
 
-      <div class="section-title" style="margin-top:15px;">3. Structural System</div>
-      <div class="input-group">
-        <label class="input-label">Resisting System (ระบบรับแรง)</label>
-        <select id="selSystem" onchange="updateSystemParams()">
-          <option value="OMF" selected>R.C. Ordinary Moment Frame (OMF)</option>
-          <option value="IMF">R.C. Intermediate Moment Frame (IMF)</option>
-          <option value="SMF">R.C. Special Moment Frame (SMF)</option>
-          <option value="SW">Shear Wall System</option>
-        </select>
-      </div>
-      <div class="param-grid">
-        <div class="value-box">
-          <div class="val-label">R</div>
-          <div id="dispR" class="val-num">3</div>
-        </div>
-        <div class="value-box">
-          <div class="val-label">Ω0</div>
-          <div id="dispOmega" class="val-num">3</div>
-        </div>
-        <div class="value-box">
-          <div class="val-label">Cd</div>
-          <div id="dispCd" class="val-num">2.5</div>
-        </div>
-      </div>
-    </div>
+        <div class="section-title" style="margin-top:15px;">Global Stiffness Parameters</div>
+        <div class="input-group">
+          <div class="row-inputs">
+            <div class="col">
+              <span class="mini-label" style="color:#1a73e8; font-weight:bold;">f'c (ksc) กำลังอัดคอนกรีต</span>
+              <input type="number" id="glbFc" class="num-input" value="280" step="10">
+            </div>
+          </div>
+          
+          <div style="margin-top:10px; border-top:1px dashed #ccc; padding-top:8px;">
+            <span class="mini-label" style="color:#5f6368; font-weight:bold;">หน้าตัดเสา (Global Column)</span>
+            <div class="row-inputs">
+              <div class="col">
+                <span class="mini-label">Col (b,h) ม.</span>
+                <div style="display:flex; gap:2px;">
+                  <input type="number" id="glbCol_b" class="num-input" value="0.40" step="0.05">
+                  <input type="number" id="glbCol_h" class="num-input" value="0.40" step="0.05">
+                </div>
+              </div>
+            </div>
+          </div>
 
-    <div id="TabModel" class="tab-content">
-      <div class="section-title">Grid Config</div>
-      <div class="input-group">
-        <label class="input-label">SPAN X (Horizontal)</label>
-        <input type="text" id="globalSpanX" class="text-input" value="4,4,4" placeholder="e.g. 4,4,4">
-      </div>
-      <div class="input-group">
-        <label class="input-label">SPAN Y (Depth)</label>
-        <input type="text" id="globalSpanY" class="text-input" value="4,3,4" placeholder="e.g. 4,3">
-      </div>
+          <div style="margin-top:10px; border-top:1px dashed #ccc; padding-top:8px;">
+            <span class="mini-label" style="color:#5f6368; font-weight:bold;">หน้าตัดคาน (Beams)</span>
+            <div class="row-inputs">
+              <div class="col">
+                <span class="mini-label">Beam X b,h (ม.)</span>
+                <div style="display:flex; gap:2px;">
+                  <input type="number" id="glbBmX_b" class="num-input" value="0.20" step="0.05">
+                  <input type="number" id="glbBmX_h" class="num-input" value="0.40" step="0.05">
+                </div>
+              </div>
+              <div class="col">
+                <span class="mini-label">Beam Y b,h (ม.)</span>
+                <div style="display:flex; gap:2px;">
+                  <input type="number" id="glbBmY_b" class="num-input" value="0.20" step="0.05">
+                  <input type="number" id="glbBmY_h" class="num-input" value="0.40" step="0.05">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div class="section-title" style="display:flex; justify-content:space-between;">
-        <span>Levels</span>
-        <span style="font-size:10px; color:#999; font-weight:normal;">Bottom to Top</span>
+        <div class="section-title" style="display:flex; justify-content:space-between; margin-top:15px;">
+          <span>Levels Data</span><span style="font-size:10px; color:#999; font-weight:normal;">Bottom to Top</span>
+        </div>
+        <div id="floorContainer" class="floor-list"></div>
+        <div id="errorMsg" class="error-msg"></div>
       </div>
-      <div id="floorContainer" class="floor-list"></div>
-      <div id="errorMsg" class="error-msg"></div>
     </div>
 
     <div class="footer-actions">
       <button id="btnAddFloor" class="btn-add" onclick="addNewFloor()">+ Add Level</button>
-      <button id="btnDraw" class="btn-generate" onclick="collectAndGenerate()">🚀 Draw Blueprint</button>
+      <button id="btnDraw" class="btn-generate" onclick="collectAndGenerate()">🚀 Draw & Calculate</button>
     </div>
 
     <script>
-      // --- TAB LOGIC ---
+      var dbData = []; 
+      var currentVal1 = 0; 
+      var currentVal2 = 0; 
+      var currentZone = 0; 
+      var currentSDC = ""; 
+      var currentIsAllowed = true;
+
+      var BANGKOK_ZONE_DATA = {
+        1:  { Sa05: 0.360 }, 2:  { Sa05: 0.352 }, 3:  { Sa05: 0.262 }, 4:  { Sa05: 0.287 }, 5:  { Sa05: 0.191 }, 
+        6:  { Sa05: 0.272 }, 7:  { Sa05: 0.246 }, 8:  { Sa05: 0.162 }, 9:  { Sa05: 0.214 }, 10: { Sa05: 0.179 }
+      };
+
+      var SYSTEM_DATA = {
+        "1_1": { R: 4,   Om: 2.5, Cd: 4,   allow: {A:true, B:true, C:true, D:true} }, 
+        "1_2": { R: 5,   Om: 2.5, Cd: 5,   allow: {A:true, B:true, C:true, D:true} }, 
+        "1_3": { R: 3,   Om: 2.5, Cd: 3,   allow: {A:true, B:true, C:false, D:false} }, 
+        "1_4": { R: 4,   Om: 2.5, Cd: 4,   allow: {A:true, B:true, C:true, D:false} }, 
+        "2_1": { R: 6,   Om: 2.5, Cd: 5,   allow: {A:true, B:true, C:true, D:true} }, 
+        "2_2": { R: 5,   Om: 2.5, Cd: 4.5, allow: {A:true, B:true, C:true, D:true} }, 
+        "2_3": { R: 4,   Om: 2.5, Cd: 4,   allow: {A:true, B:true, C:false, D:false} }, 
+        "2_4": { R: 5,   Om: 2.5, Cd: 4.5, allow: {A:true, B:true, C:true, D:false} }, 
+        "3_1": { R: 8,   Om: 3,   Cd: 5.5, allow: {A:true, B:true, C:true, D:true} }, 
+        "3_2": { R: 5,   Om: 3,   Cd: 4.5, allow: {A:true, B:true, C:true, D:false} }, 
+        "3_3": { R: 3,   Om: 3,   Cd: 2.5, allow: {A:true, B:true, C:false, D:false} }, 
+        "4_1": { R: 8,   Om: 2.5, Cd: 6.5, allow: {A:true, B:true, C:true, D:true} }, 
+        "4_2": { R: 6,   Om: 2.5, Cd: 5,   allow: {A:true, B:true, C:true, D:false} }, 
+        "5_1": { R: 6.5, Om: 2.5, Cd: 5,   allow: {A:true, B:true, C:true, D:false} }, 
+        "5_2": { R: 5.5, Om: 2.5, Cd: 4.5, allow: {A:true, B:true, C:true, D:false} }, 
+        "6_1": { R: 4.5, Om: 2.5, Cd: 4,   allow: {A:true, B:true, C:false, D:false} } 
+      };
+
+      window.onload = function() {
+        try {
+          document.querySelector('.footer-actions').style.display = 'none';
+          addNewFloor(3.5, 2.0); 
+          addNewFloor(3.5, 2.0); 
+          addNewFloor(3.5, 2.0); 
+          addNewFloor(3.5, 2.0); 
+          calculateGridArea(); 
+          loadSeismicData();
+        } catch (e) { 
+          alert("Startup Error: " + e.message); 
+        }
+      };
+
       function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        var tabs = document.querySelectorAll('.tab-content');
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+        
+        var btns = document.querySelectorAll('.tab-btn');
+        for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
         
         document.getElementById(tabId).classList.add('active');
+        var btnIndex = (tabId === 'TabSeismic') ? 0 : 1;
+        btns[btnIndex].classList.add('active');
         
-        const btnIndex = tabId === 'TabSeismic' ? 0 : 1;
-        document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+        document.querySelector('.footer-actions').style.display = (tabId === 'TabSeismic') ? 'none' : 'flex';
+      }
 
-        const footer = document.querySelector('.footer-actions');
-        if(tabId === 'TabSeismic') {
-           footer.style.display = 'none';
-        } else {
-           footer.style.display = 'flex';
+      function getFa(siteClass, Ss) { 
+        var grid = {
+            "A":[0.8,0.8,0.8,0.8,0.8], "B":[1.0,1.0,1.0,1.0,1.0], 
+            "C":[1.2,1.2,1.1,1.0,1.0], "D":[1.6,1.4,1.2,1.1,1.0], 
+            "E":[2.5,1.7,1.2,0.9,0.9], "F":[1.0,1.0,1.0,1.0,1.0]
+        }; 
+        var y_arr = grid[siteClass] || grid["D"];
+        return interpolate(Ss, [0.25,0.50,0.75,1.00,1.25], y_arr); 
+      }
+
+      function getFv(siteClass, S1) { 
+        var grid = {
+            "A":[0.8,0.8,0.8,0.8,0.8], "B":[1.0,1.0,1.0,1.0,1.0], 
+            "C":[1.7,1.6,1.5,1.4,1.3], "D":[2.4,2.0,1.8,1.6,1.5], 
+            "E":[3.5,3.2,2.8,2.4,2.4], "F":[1.0,1.0,1.0,1.0,1.0]
+        }; 
+        var y_arr = grid[siteClass] || grid["D"];
+        return interpolate(S1, [0.1,0.2,0.3,0.4,0.5], y_arr); 
+      }
+
+      function interpolate(x, xa, ya) { 
+        if (x <= xa[0]) return ya[0]; 
+        if (x >= xa[xa.length-1]) return ya[ya.length-1]; 
+        for (var i = 0; i < xa.length - 1; i++) {
+            if (x >= xa[i] && x <= xa[i+1]) {
+                return ya[i] + (x - xa[i]) * (ya[i+1] - ya[i]) / (xa[i+1] - xa[i]);
+            }
+        } 
+        return ya[0]; 
+      }
+
+      function getSeismicDesignCategory(val, riskCat, useTable224) {
+        var rLvl = 0; 
+        if (riskCat === 'III') rLvl = 1; 
+        if (riskCat === 'IV') rLvl = 2;
+        
+        var cats = ["A", "B", "C", "D"]; 
+        var idx = 0;
+        
+        if (!useTable224) { 
+            if (val < 0.167) idx = 0; 
+            else if (val < 0.33) idx = (rLvl === 2) ? 2 : 1; 
+            else if (val < 0.50) idx = (rLvl === 2) ? 3 : 2; 
+            else idx = 3; 
+        } else { 
+            if (val < 0.067) idx = 0; 
+            else if (val < 0.133) idx = (rLvl === 2) ? 2 : 1; 
+            else if (val < 0.20) idx = (rLvl === 2) ? 3 : 2; 
+            else idx = 3; 
         }
+        return cats[idx];
       }
 
-      // --- SEISMIC PARAMETER LOGIC ---
-      function updateImportanceFactor() {
-        const cat = document.getElementById('selRiskCat').value;
-        let Ie = 1.0;
-        if (cat === 'I' || cat === 'II') Ie = 1.0;
-        else if (cat === 'III') Ie = 1.25;
-        else if (cat === 'IV') Ie = 1.50;
-        document.getElementById('dispIe').textContent = Ie.toFixed(2);
-      }
-
-      function updateSystemParams() {
-        const sys = document.getElementById('selSystem').value;
-        let R=3, Omega=3, Cd=2.5; // Default OMF
-        
-        switch(sys) {
-          case 'OMF': R=3; Omega=3; Cd=2.5; break;
-          case 'IMF': R=5; Omega=3; Cd=4.5; break;
-          case 'SMF': R=8; Omega=3; Cd=5.5; break;
-          case 'SW':  R=5; Omega=2.5; Cd=5; break; 
-        }
-        
-        document.getElementById('dispR').textContent = R;
-        document.getElementById('dispOmega').textContent = Omega;
-        document.getElementById('dispCd').textContent = Cd;
-      }
-
-      // --- MODEL LOGIC ---
-      let floorCount = 0;
-
-      // [แก้ไข] ค่าเริ่มต้น: Height=3.5, Load=2.0
-      function addNewFloor(defaultHeight = 3.5, defaultLoad = 2.0) {
-        floorCount++;
-        const container = document.getElementById('floorContainer');
-        const div = document.createElement('div');
-        div.className = 'floor-card';
-        div.id = 'floor-' + floorCount;
-        
-        div.innerHTML = `
-          <div class="floor-header">
-            <span class="floor-title">Level ${floorCount}</span>
-            <button class="btn-delete" onclick="removeFloor(this)" title="Remove">✕</button>
-          </div>
-          <div class="row-inputs">
-            <div class="col col-height-wrapper">
-              <span class="mini-label">Height (m)</span>
-              <input type="number" step="0.1" class="num-input inp-height" value="${defaultHeight}">
-            </div>
-            <div class="col">
-              <span class="mini-label">Load (T/m)</span>
-              <input type="number" step="0.1" class="num-input inp-load" value="${defaultLoad}">
-            </div>
-          </div>
-        `;
-        container.appendChild(div);
-        updateFloorLabels();
-      }
-
-      function removeFloor(btn) {
-        const card = btn.closest('.floor-card');
-        card.remove();
-        updateFloorLabels();
-      }
-
-      function updateFloorLabels() {
-        const cards = document.querySelectorAll('.floor-card');
-        floorCount = cards.length;
-        cards.forEach((card, index) => {
-          const title = card.querySelector('.floor-title');
-          if (index === cards.length - 1) {
-             title.textContent = `Roof / Deck (Top)`;
-             card.classList.add('is-roof'); 
-          } else {
-             title.textContent = `Floor ${index + 1}`;
-             card.classList.remove('is-roof');
-          }
-        });
-      }
-
-      function collectAndGenerate() {
-        const btn = document.querySelector('#btnDraw');
-        const errorMsg = document.getElementById('errorMsg');
-        
-        const spanX = document.getElementById('globalSpanX').value;
-        const spanY = document.getElementById('globalSpanY').value;
-        
-        const seismicParams = {
-          ss: document.getElementById('dispSs').textContent,
-          s1: document.getElementById('dispS1').textContent,
-          siteClass: document.getElementById('selSoilClass').value,
-          riskCat: document.getElementById('selRiskCat').value,
-          R: document.getElementById('dispR').textContent,
-          Ie: document.getElementById('dispIe').textContent
-        };
-
-        const cards = document.querySelectorAll('.floor-card');
-        if (cards.length === 0) {
-          errorMsg.textContent = "Add at least 1 level.";
-          errorMsg.style.display = 'block';
-          return;
-        }
-
-        let heightsArr = [];
-        let loadsArr = [];
-
-        cards.forEach((card, index) => {
-          const h = card.querySelector('.inp-height').value || 0;
-          const l = card.querySelector('.inp-load').value || 0;
-          
-          if (index < cards.length - 1) {
-            heightsArr.push(h);
-          }
-          loadsArr.push(l);
-        });
-
-        const heightStr = heightsArr.join(',');
-        const loadsStr = loadsArr.join(',');
-
-        btn.disabled = true;
-        btn.textContent = "Calculating ELF...";
-        errorMsg.style.display = 'none';
-
+      function loadSeismicData() { 
         google.script.run
-          .withSuccessHandler(() => {
-            btn.disabled = false;
-            btn.textContent = "🚀 Draw Blueprint";
+          .withSuccessHandler(function(data) { 
+              dbData = data; 
+              populateProvinces(); 
           })
-          .withFailureHandler((err) => {
-            btn.disabled = false;
-            btn.textContent = "Retry";
-            errorMsg.textContent = "Error: " + err.message;
-            errorMsg.style.display = 'block';
+          .withFailureHandler(function(err) { 
+              alert("เกิดข้อผิดพลาดในการโหลดฐานข้อมูลแผ่นดินไหว: " + err.message); 
           })
-          .receiveFormInput(spanX, heightStr, loadsStr, spanY, seismicParams);
-      }
-
-      // --- SEISMIC DATA FETCHING ---
-      let dbData = [];
-
-      function loadSeismicData() {
-        google.script.run.withSuccessHandler(data => {
-          dbData = data;
-          populateProvinces();
-        }).getSeismicDatabase();
+          .getSeismicDatabase(); 
       }
 
       function populateProvinces() {
-        const selProv = document.getElementById('selProvince');
-        selProv.innerHTML = '<option value="">-- Select Province --</option>';
-        const provinces = [...new Set(dbData.map(row => row[0]))].sort();
-        
-        provinces.forEach(p => {
-          const opt = document.createElement('option');
-          opt.value = p;
-          opt.textContent = p;
-          selProv.appendChild(opt);
-        });
+        try {
+            var selProv = document.getElementById('selProvince'); 
+            selProv.innerHTML = '<option value="">-- Select Province --</option>';
+            if (!dbData || dbData.length === 0) return;
+            
+            var provSet = new Set();
+            for (var i = 0; i < dbData.length; i++) {
+                if (dbData[i][0]) provSet.add(String(dbData[i][0]).trim());
+            }
+            
+            var provinces = Array.from(provSet).sort();
+            for (var j = 0; j < provinces.length; j++) {
+                var opt = document.createElement('option'); 
+                opt.value = provinces[j]; 
+                opt.textContent = provinces[j]; 
+                selProv.appendChild(opt); 
+            }
+        } catch(e) { console.error("populateProvinces Error: ", e); }
       }
 
       function onProvinceChange() {
-        const prov = document.getElementById('selProvince').value;
-        const selAmp = document.getElementById('selAmphoe');
-        
-        selAmp.innerHTML = '<option value="">-- Select District --</option>';
-        document.getElementById('dispSs').textContent = '-';
-        document.getElementById('dispS1').textContent = '-';
+        try {
+            var prov = document.getElementById('selProvince').value; 
+            var selAmp = document.getElementById('selAmphoe');
+            
+            selAmp.innerHTML = '<option value="">-- Select District --</option>';
+            
+            document.getElementById('basinBar').style.display = 'none'; 
+            document.getElementById('lblParam1').textContent = "Ss"; 
+            document.getElementById('lblParam2').textContent = "S1";
+            document.getElementById('dispVal1').textContent = "-"; 
+            document.getElementById('dispVal2').textContent = "-";
+            document.getElementById('lblParam1').style.color = "#1a73e8";
+            document.getElementById('lblParam2').style.color = "#1a73e8";
 
-        if (!prov) {
-          selAmp.disabled = true;
-          return;
-        }
-
-        const amphoes = dbData.filter(row => row[0] === prov).map(row => row[1]).sort();
-        
-        amphoes.forEach(a => {
-          const opt = document.createElement('option');
-          opt.value = a;
-          opt.textContent = a;
-          selAmp.appendChild(opt);
-        });
-        
-        selAmp.disabled = false;
+            currentVal1 = 0; 
+            currentVal2 = 0; 
+            currentZone = 0; 
+            recalcSeismicParams();
+            
+            if (!prov || prov === "") { 
+                selAmp.disabled = true; 
+                return; 
+            }
+            
+            var ampSet = new Set();
+            for (var i = 0; i < dbData.length; i++) {
+                if (String(dbData[i][0]).trim() === String(prov).trim()) {
+                    ampSet.add(String(dbData[i][1]).trim());
+                }
+            }
+            
+            var amphoes = Array.from(ampSet).sort();
+            for (var j = 0; j < amphoes.length; j++) {
+                var opt = document.createElement('option'); 
+                opt.value = amphoes[j]; 
+                opt.textContent = amphoes[j]; 
+                selAmp.appendChild(opt); 
+            }
+            
+            selAmp.disabled = false;
+        } catch(e) { console.error("onProvinceChange Error: ", e); }
       }
 
       function onAmphoeChange() {
-        const prov = document.getElementById('selProvince').value;
-        const amp = document.getElementById('selAmphoe').value;
-        
-        if (!prov || !amp) return;
+        try {
+            var prov = document.getElementById('selProvince').value; 
+            var amp = document.getElementById('selAmphoe').value;
+            
+            var basinBar = document.getElementById('basinBar'); 
+            var selSoil = document.getElementById('selSoilClass');
+            var lbl1 = document.getElementById('lblParam1'); 
+            var lbl2 = document.getElementById('lblParam2');
+            var val1 = document.getElementById('dispVal1');
+            var val2 = document.getElementById('dispVal2');
+            
+            if (!prov || !amp || prov === "" || amp === "") return;
+            
+            var found = null;
+            for (var i = 0; i < dbData.length; i++) {
+                var rowProv = String(dbData[i][0]).trim();
+                var rowAmp = String(dbData[i][1]).trim();
+                if (rowProv === String(prov).trim() && rowAmp === String(amp).trim()) {
+                    found = dbData[i];
+                    break;
+                }
+            }
 
-        const found = dbData.find(row => row[0] === prov && row[1] === amp);
-        if (found) {
-          document.getElementById('dispSs').textContent = found[2];
-          document.getElementById('dispS1').textContent = found[3];
+            if (found) {
+              currentZone = parseInt(found[4], 10);
+              if (isNaN(currentZone)) currentZone = 0;
+              
+              if (currentZone > 0) {
+                basinBar.textContent = "⚠️ ในแอ่งกรุงเทพฯ (Zone " + currentZone + ")"; 
+                basinBar.className = "basin-in"; 
+                basinBar.style.display = "block";
+                
+                selSoil.value = "E"; 
+                lbl1.textContent = "Sa(0.5s)"; 
+                lbl2.textContent = "-";        
+                lbl1.style.color = "#e65100";
+                lbl2.style.color = "#ccc";
+                
+                var zData = BANGKOK_ZONE_DATA[currentZone];
+                currentVal1 = zData ? zData.Sa05 : 0; 
+                currentVal2 = 0; 
+              } else {
+                basinBar.textContent = "✅ นอกแอ่งกรุงเทพฯ"; 
+                basinBar.className = "basin-out"; 
+                basinBar.style.display = "block";
+                
+                if (selSoil.value === "E") selSoil.value = "D"; 
+                lbl1.textContent = "Ss"; 
+                lbl2.textContent = "S1";
+                lbl1.style.color = "#1a73e8"; 
+                lbl2.style.color = "#1a73e8";
+                
+                currentVal1 = parseFloat(found[2]); 
+                if (isNaN(currentVal1)) currentVal1 = 0;
+                
+                currentVal2 = parseFloat(found[3]); 
+                if (isNaN(currentVal2)) currentVal2 = 0;
+              }
+              
+              val1.textContent = currentVal1.toFixed(3);
+              val2.textContent = (currentZone > 0) ? "-" : currentVal2.toFixed(3);
+              
+              recalcSeismicParams();
+            }
+        } catch(e) { console.error("onAmphoeChange Error: ", e); }
+      }
+
+      function recalcSeismicParams() {
+        try {
+            var siteClass = document.getElementById('selSoilClass').value; 
+            var riskCat = document.getElementById('selRiskCat').value;
+            
+            var Ie = 1.0; 
+            if (riskCat === 'III') Ie = 1.25; 
+            else if (riskCat === 'IV') Ie = 1.50;
+            
+            document.getElementById('dispIe').textContent = Ie.toFixed(2);
+            
+            var cards = document.querySelectorAll('.floor-card'); 
+            var totalH = 0; 
+            for (var i = 0; i < cards.length; i++) {
+                var hInput = cards[i].querySelector('.inp-height');
+                if (hInput) {
+                    var hVal = parseFloat(hInput.value);
+                    if (!isNaN(hVal)) totalH += hVal;
+                }
+            }
+            if (totalH === 0) totalH = 10;
+            var T = 0.02 * totalH;
+
+            if (currentZone > 0) {
+              var zData = BANGKOK_ZONE_DATA[currentZone];
+              var Sa05 = zData ? zData.Sa05 : 0;
+              currentSDC = getSeismicDesignCategory(Sa05, riskCat, T > 0.5);
+            } else {
+              var Fa = getFa(siteClass, currentVal1); 
+              var Fv = getFv(siteClass, currentVal2);
+              var SDS = (2/3) * Fa * currentVal1; 
+              var SD1 = (2/3) * Fv * currentVal2;
+              var cat1 = getSeismicDesignCategory(SDS, riskCat, false); 
+              var cat2 = getSeismicDesignCategory(SD1, riskCat, true);
+              currentSDC = (cat1 > cat2) ? cat1 : cat2;
+            }
+
+            var mapThai = {"A":"ก (A)","B":"ข (B)","C":"ค (C)","D":"ง (D)"};
+            document.getElementById('dispSDC').textContent = mapThai[currentSDC] || "-";
+            document.getElementById('dispSDCDesc').textContent = (currentSDC === 'D') ? "ความเสี่ยงสูงมาก" : "ความเสี่ยงปานกลาง/สูง";
+            
+            var box = document.getElementById('sdcContainer');
+            if (currentSDC === 'A') { 
+                box.style.borderColor='#34a853'; box.style.background='#e6f4ea'; 
+            } else if (currentSDC === 'B') { 
+                box.style.borderColor='#fbbc04'; box.style.background='#fef7e0'; 
+            } else { 
+                box.style.borderColor='#d93025'; box.style.background='#fce8e6'; 
+            }
+            
+            updateSystemParams(); 
+        } catch(e) { console.error("recalcSeismicParams Error: ", e); }
+      }
+
+      function updateSystemParams() {
+        try {
+            var sysKey = document.getElementById('selSystem').value; 
+            var warningBox = document.getElementById('sysWarning');
+            var data = SYSTEM_DATA[sysKey]; 
+            
+            if (!data) return; 
+            
+            document.getElementById('dispR').textContent = data.R;
+            document.getElementById('dispOmega').textContent = data.Om;
+            document.getElementById('dispCd').textContent = data.Cd;
+            
+            currentIsAllowed = true; 
+            if (currentSDC === 'B' && data.allow.B === false) currentIsAllowed = false;
+            if (currentSDC === 'C' && data.allow.C === false) currentIsAllowed = false;
+            if (currentSDC === 'D' && data.allow.D === false) currentIsAllowed = false;
+
+            if (!currentIsAllowed) { 
+                warningBox.style.display = 'block'; 
+                warningBox.innerHTML = '⚠️ <b>Warning:</b> ระบบโครงสร้างนี้<br><u>ไม่ได้รับอนุญาต</u>ในพื้นที่ประเภท <b>' + currentSDC + '</b>'; 
+            } else { 
+                warningBox.style.display = 'none'; 
+            }
+        } catch(e) { console.error("updateSystemParams Error: ", e); }
+      }
+
+      function calculateGridArea() {
+        var sumStr = function(str) { 
+            if (!str) return 0; 
+            var parts = str.split(',');
+            var sum = 0;
+            for (var i = 0; i < parts.length; i++) {
+                var num = parseFloat(parts[i]);
+                if (!isNaN(num)) sum += num;
+            }
+            return sum;
+        };
+        var sx = document.getElementById('globalSpanX').value;
+        var sy = document.getElementById('globalSpanY').value;
+        var area = sumStr(sx) * sumStr(sy);
+        document.getElementById('dispArea').textContent = area.toFixed(2) + " m²";
+        recalcSeismicParams(); 
+      }
+
+      var floorCount = 0;
+      function addNewFloor(defaultHeight, defaultLoad) {
+        floorCount++;
+        var container = document.getElementById('floorContainer'); 
+        var div = document.createElement('div');
+        div.className = 'floor-card'; 
+        div.id = 'floor-' + floorCount;
+        
+        div.innerHTML = 
+          '<div class="floor-header">' +
+            '<span class="floor-title">Level ' + floorCount + '</span>' +
+            '<button class="btn-delete" onclick="removeFloor(this)" title="Remove">✕</button>' +
+          '</div>' +
+          '<div class="row-inputs">' +
+            '<div class="col col-height-wrapper">' +
+               '<span class="mini-label">Height (m)</span>' +
+               '<input type="number" step="0.1" class="num-input inp-height" value="' + defaultHeight + '" oninput="calculateGridArea()">' +
+            '</div>' +
+            '<div class="col">' +
+               '<span class="mini-label">Load (T/m²)</span>' +
+               '<input type="number" step="0.1" class="num-input inp-load" value="' + defaultLoad + '">' +
+            '</div>' +
+          '</div>';
+          
+        container.appendChild(div); 
+        updateFloorLabels(); 
+        calculateGridArea(); 
+      }
+
+      function removeFloor(btn) { 
+          btn.closest('.floor-card').remove(); 
+          updateFloorLabels(); 
+          calculateGridArea(); 
+      }
+
+      function updateFloorLabels() {
+        var cards = document.querySelectorAll('.floor-card'); 
+        floorCount = cards.length;
+        for (var i = 0; i < cards.length; i++) {
+          var title = cards[i].querySelector('.floor-title');
+          if (i === cards.length - 1) { 
+              title.textContent = 'Roof / Deck (Top)'; 
+              cards[i].classList.add('is-roof'); 
+          } else { 
+              title.textContent = 'Floor ' + (i + 1); 
+              cards[i].classList.remove('is-roof'); 
+          }
         }
       }
 
-      // [แก้ไข] สร้าง 3 ชั้น + 1 Roof
-      // กำหนดค่า Default Roof ให้มี Height 3.5m เผื่อไว้ (แม้จะซ่อน) เพื่อให้ตอนเพิ่มชั้นต่อไม่เป็น 0
-      window.onload = function() {
-        addNewFloor(3.5, 2.0); // Floor 1
-        addNewFloor(3.5, 2.0); // Floor 2
-        addNewFloor(3.5, 2.0); // Floor 3
-        addNewFloor(3.5, 2.0); // Roof (ใส่ 3.5 เผื่อไว้)
-        
-        loadSeismicData();
-      };
+      function collectAndGenerate() {
+        try {
+            var btn = document.querySelector('#btnDraw'); 
+            var errorMsg = document.getElementById('errorMsg');
+            var spanX = document.getElementById('globalSpanX').value; 
+            var spanY = document.getElementById('globalSpanY').value;
+            var selSys = document.getElementById('selSystem'); 
+            var sysName = selSys.options[selSys.selectedIndex].text.trim();
+
+            var stiffnessConfig = {
+              fc: parseFloat(document.getElementById('glbFc').value) || 280,
+              col_b: parseFloat(document.getElementById('glbCol_b').value) || 0.4,
+              col_h: parseFloat(document.getElementById('glbCol_h').value) || 0.4,
+              bmX_b: parseFloat(document.getElementById('glbBmX_b').value) || 0.2,
+              bmX_h: parseFloat(document.getElementById('glbBmX_h').value) || 0.4,
+              bmY_b: parseFloat(document.getElementById('glbBmY_b').value) || 0.2,
+              bmY_h: parseFloat(document.getElementById('glbBmY_h').value) || 0.4
+            };
+
+            var heightsArr = []; 
+            var loadsArr = [];
+            var cards = document.querySelectorAll('.floor-card');
+            
+            if (cards.length === 0) { 
+                errorMsg.textContent = "Add at least 1 level."; 
+                errorMsg.style.display = 'block'; 
+                return; 
+            }
+            
+            for (var i = 0; i < cards.length; i++) {
+              if (i < cards.length - 1) { 
+                  var hInput = cards[i].querySelector('.inp-height');
+                  heightsArr.push(hInput ? hInput.value : 0); 
+              }
+              var lInput = cards[i].querySelector('.inp-load');
+              loadsArr.push(lInput ? lInput.value : 0);
+            }
+
+            var vMsg = currentIsAllowed ? "" : "System NOT permitted in SDC " + currentSDC;
+            
+            var seismicParams = {
+              ss: currentVal1, 
+              s1: currentVal2, 
+              siteClass: document.getElementById('selSoilClass').value, 
+              riskCat: document.getElementById('selRiskCat').value,
+              R: document.getElementById('dispR').textContent, 
+              Cd: document.getElementById('dispCd').textContent, 
+              Ie: document.getElementById('dispIe').textContent,
+              systemType: sysName, 
+              basinZone: currentZone, 
+              isAllowed: currentIsAllowed, 
+              violationMsg: vMsg, 
+              stiffnessConfig: stiffnessConfig 
+            };
+
+            btn.disabled = true; 
+            btn.textContent = "Calculating ELF..."; 
+            errorMsg.style.display = 'none';
+            
+            google.script.run
+              .withSuccessHandler(function() { 
+                  btn.disabled = false; 
+                  btn.textContent = "🚀 Draw & Calculate"; 
+              })
+              .withFailureHandler(function(err) { 
+                  btn.disabled = false; 
+                  btn.textContent = "Retry"; 
+                  errorMsg.textContent = "Error: " + err.message; 
+                  errorMsg.style.display = 'block'; 
+              })
+              .receiveFormInput(spanX, heightsArr.join(','), loadsArr.join(','), spanY, seismicParams);
+              
+        } catch(e) {
+            alert("Execution Error: " + e.message);
+        }
+      }
     </script>
   </body>
 </html>
