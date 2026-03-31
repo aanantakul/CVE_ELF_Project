@@ -1,7 +1,7 @@
 /**
- * Building Structure Generator & Seismic Analyzer - V0.5.28
- * + BUG FIX: Footing drawings resized to 3 columns max to prevent overlap on narrow spans.
- * + FEATURE: Minimum cell spacing enforced at 6 cells to guarantee safe drawing boundaries.
+ * Building Structure Generator & Seismic Analyzer - V0.5.34
+ * + UI FIX: Reduced `requiredLeftSpace` from 45 to 36 to eliminate the large gap between the dimension line and the building drawing.
+ * + FEATURE: Integrated "Project Info" dynamically with Cover Page and Frozen Headers.
  */
 
 const CONFIG = {
@@ -177,7 +177,7 @@ function calculateELF(spanXStr, heightStr, loadsStr, spanYStr, params) {
       Ss: Ss, S1: S1, SDS: SDS, SD1: SD1, Fa: Fa, Fv: Fv, SiteClass: SiteClass, RiskCat: RiskCat, 
       R: R, Cd: params.Cd, Ie: Ie, dc: designCategory, meth: calculationMethod, 
       basinZone: params.basinZone, systemType: params.systemType, isAllowed: params.isAllowed, violationMsg: params.violationMsg,
-      stiffnessConfig: params.stiffnessConfig, gravConfig: params.gravConfig, 
+      stiffnessConfig: params.stiffnessConfig, gravConfig: params.gravConfig, projectInfo: params.projectInfo,
       totalSpanX: totalSpanLength, totalSpanY: totalDepth, totalHeight: totalHeight,
       floorArea: floorArea, numFloors: numFloors, totalArea: totalArea, 
       spanXStr: spanXStr, spanYStr: spanYStr 
@@ -254,6 +254,7 @@ function getFa(siteClass, Ss) { const grid = { "A": [0.8, 0.8, 0.8, 0.8, 0.8], "
 function getFv(siteClass, S1) { const grid = { "A": [0.8, 0.8, 0.8, 0.8, 0.8], "B": [1.0, 1.0, 1.0, 1.0, 1.0], "C": [1.7, 1.6, 1.5, 1.4, 1.3], "D": [2.4, 2.0, 1.8, 1.6, 1.5], "E": [3.5, 3.2, 2.8, 2.4, 2.4] }; const y_arr = grid[siteClass] || grid["D"]; return interpolateLine(S1, [0.1, 0.2, 0.3, 0.4, 0.5], y_arr); }
 function interpolateLine(x, x_arr, y_arr) { if (x <= x_arr[0]) return y_arr[0]; if (x >= x_arr[x_arr.length - 1]) return y_arr[y_arr.length - 1]; for (let i = 0; i < x_arr.length - 1; i++) { if (x >= x_arr[i] && x <= x_arr[i+1]) return y_arr[i] + (x - x_arr[i]) * (y_arr[i+1] - y_arr[i]) / (x_arr[i+1] - x_arr[i]); } return y_arr[0]; }
 function sNum(val, decimals) { return (typeof val === 'number' && !isNaN(val)) ? val.toFixed(decimals) : (val ? val : "-"); }
+function fmtDate(dStr) { if(!dStr) return "-"; const p = dStr.split('-'); if(p.length===3) return p[2]+"/"+p[1]+"/"+p[0]; return dStr; }
 
 function setStatus(range, statusText) {
   range.setValue(statusText); 
@@ -339,6 +340,7 @@ function createCalculationSheet(res) {
   const p = res.params; 
   const sc = p.stiffnessConfig;
   const gc = p.gravConfig; 
+  const pi = p.projectInfo || {}; // ข้อมูลโครงการ
   const levels = res.levels.slice().reverse();
   
   sheet.setColumnWidths(1, 1, 160); 
@@ -348,6 +350,38 @@ function createCalculationSheet(res) {
   sheet.setColumnWidths(8, 1, 80);  
   sheet.setColumnWidths(9, 1, 70);   
   sheet.setColumnWidths(10, 1, 70);  
+
+  sheet.setFrozenRows(4);
+  sheet.getRange(1, 6, 1, 5).merge().setValue("Project: " + (pi.projName || "-")).setHorizontalAlignment("right").setFontWeight("bold").setFontColor("#555");
+  sheet.getRange(2, 6, 1, 5).merge().setValue("Date: " + fmtDate(pi.projDate)).setHorizontalAlignment("right").setFontColor("#555");
+  sheet.getRange(3, 6, 1, 5).merge().setValue("Designed By: " + (pi.desName || "-")).setHorizontalAlignment("right").setFontColor("#555");
+  
+  sheet.getRange(15, 1, 1, 10).merge().setValue("รายการคำนวณโครงสร้าง").setHorizontalAlignment("center").setFontSize(24).setFontWeight("bold");
+  sheet.getRange(17, 1, 1, 10).merge().setValue("SEISMIC ANALYSIS REPORT").setHorizontalAlignment("center").setFontSize(18).setFontColor("#555555");
+  
+  sheet.getRange(22, 2, 1, 2).merge().setValue("ชื่อโครงการ:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(22, 4, 1, 6).merge().setValue(pi.projName || "-").setHorizontalAlignment("left");
+  
+  sheet.getRange(24, 2, 1, 2).merge().setValue("เจ้าของโครงการ:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(24, 4, 1, 6).merge().setValue(pi.owner || "-").setHorizontalAlignment("left");
+  
+  sheet.getRange(26, 2, 1, 2).merge().setValue("สถานที่ก่อสร้าง:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(26, 4, 1, 6).merge().setValue(pi.location || "-").setHorizontalAlignment("left");
+  
+  sheet.getRange(28, 2, 1, 2).merge().setValue("ประเภทอาคาร:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(28, 4, 1, 6).merge().setValue(pi.bldgType || "-").setHorizontalAlignment("left");
+  
+  sheet.getRange(34, 2, 1, 2).merge().setValue("วิศวกรผู้ออกแบบ:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(34, 4, 1, 6).merge().setValue((pi.desName || "-") + "  (" + (pi.desPos || "-") + ")").setHorizontalAlignment("left");
+  sheet.getRange(35, 4, 1, 6).merge().setValue("ใบอนุญาต กว.: " + (pi.desLic || "-")).setHorizontalAlignment("left");
+  
+  sheet.getRange(37, 2, 1, 2).merge().setValue("วิศวกรผู้ตรวจสอบ:").setHorizontalAlignment("right").setFontWeight("bold");
+  sheet.getRange(37, 4, 1, 6).merge().setValue(pi.chkName || "-").setHorizontalAlignment("left");
+  sheet.getRange(38, 4, 1, 6).merge().setValue("ใบอนุญาต กว.: " + (pi.chkLic || "-")).setHorizontalAlignment("left");
+  
+  sheet.getRange(45, 1, 1, 10).merge().setValue(pi.compName || "KSKY Engineering co., ltd.").setHorizontalAlignment("center").setFontSize(14).setFontWeight("bold").setFontColor("#1565c0");
+
+  let r = 60; 
   
   let cb = sc.col_b * 100, ch = sc.col_h * 100;
   let bxb = sc.bmX_b * 100, bxh = sc.bmX_h * 100;
@@ -417,7 +451,7 @@ function createCalculationSheet(res) {
   let DL_short = gc.DL * span_S;
   let DL_long = gc.DL * span_L;
   
-  let r = 1;
+  let sumStart = r;
   sheet.getRange(r, 1, 1, 10).merge().setValue("SEISMIC ANALYSIS & STABILITY CHECKS").setFontSize(14).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#e6f4ea"); r += 2;
   
   sheet.getRange(r, 1, 1, 10).merge().setValue("- ข้อมูลทั่วไปของอาคาร (Building Information)").setFontWeight("bold"); r++;
@@ -491,6 +525,10 @@ function createCalculationSheet(res) {
   
   sheet.getRange(r, 1, 1, 10).merge().setValue("- ตรวจสอบเสถียรภาพของอาคาร (Global Stability)").setFontWeight("bold"); r++;
   
+  if (p.totalHeight > 25) {
+      sheet.getRange(r, 1, 1, 10).merge().setValue("⚠️ หมายเหตุ: อาคารสูงเกิน 25 เมตร การใช้สมการ Simplified Stability อาจคลาดเคลื่อนสูง ควรใช้โปรแกรม 3D Finite Element").setFontColor("#d93025").setFontStyle("italic"); r++;
+  }
+
   sheet.getRange(r, 1, 1, 4).merge().setValue("กรณีโครงสร้างคอนกรีตเสริมเหล็ก เมื่อ Ib=0.35Ig, Ic=0.70Ig");
   sheet.getRange(r, 6).setValue("fc' :").setHorizontalAlignment("right");
   sheet.getRange(r, 7).setValue(sc.fc).setHorizontalAlignment("center").setBackground("#f3f3f3");
@@ -561,14 +599,14 @@ function createCalculationSheet(res) {
   sheet.getRange(r, 1, 1, 4).merge().setValue("ตรวจสอบการเคลื่อนตัวแต่ละชั้น"); 
   sheet.getRange(r, 6).setValue("Δa >= Δx").setHorizontalAlignment("right"); 
   sheet.getRange(r, 7).setValue("'=").setHorizontalAlignment("center");
-  sheet.getRange(r, 8).setValue(sNum(max_delta_story_cm, 2)).setHorizontalAlignment("center"); 
-  setStatus(sheet.getRange(r, 10), max_delta_story_cm <= delta_a_cm ? "PASS" : "FAIL"); r++;
+  sheet.getRange(r, 8).setValue(p.totalHeight > 25 ? "N/A" : sNum(max_delta_story_cm, 2)).setHorizontalAlignment("center"); 
+  setStatus(sheet.getRange(r, 10), p.totalHeight > 25 ? "-" : (max_delta_story_cm <= delta_a_cm ? "PASS" : "FAIL")); r++;
   
   sheet.getRange(r, 1, 1, 4).merge().setValue("ตรวจสอบการเคลื่อนตัวสูงสุด"); 
   sheet.getRange(r, 6).setValue("Δmax >= Σδxe").setHorizontalAlignment("right"); 
   sheet.getRange(r, 7).setValue("'=").setHorizontalAlignment("center");
-  sheet.getRange(r, 8).setValue(sNum(max_sum_elastic_cm, 2)).setHorizontalAlignment("center"); 
-  setStatus(sheet.getRange(r, 10), max_sum_elastic_cm <= H_allow_cm ? "PASS" : "FAIL"); r++;
+  sheet.getRange(r, 8).setValue(p.totalHeight > 25 ? "N/A" : sNum(max_sum_elastic_cm, 2)).setHorizontalAlignment("center"); 
+  setStatus(sheet.getRange(r, 10), p.totalHeight > 25 ? "-" : (max_sum_elastic_cm <= H_allow_cm ? "PASS" : "FAIL")); r++;
   
   sheet.getRange(r, 1, 1, 4).merge().setValue("ค่า สปส. เสถียรภาพสูงสุด"); 
   sheet.getRange(r, 6).setValue("θmax = 0.5/Cd").setHorizontalAlignment("right"); 
@@ -578,14 +616,14 @@ function createCalculationSheet(res) {
   sheet.getRange(r, 1, 1, 4).merge().setValue("ตรวจสอบผลของโมเมนต์ลำดับที่สอง (0.1 < θ <= θmax)");
   sheet.getRange(r, 6).setValue("(X)").setHorizontalAlignment("right"); 
   sheet.getRange(r, 7).setValue("'=").setHorizontalAlignment("center");
-  sheet.getRange(r, 8).setValue(sNum(max_th_X, 4)).setHorizontalAlignment("center"); 
-  let pStatX = "PASS"; if (max_th_X > th_max) pStatX = "FAIL"; else if (max_th_X > 0.1) pStatX = "Amplify";
+  sheet.getRange(r, 8).setValue(p.totalHeight > 25 ? "N/A" : sNum(max_th_X, 4)).setHorizontalAlignment("center"); 
+  let pStatX = "PASS"; if(p.totalHeight > 25) pStatX = "-"; else if (max_th_X > th_max) pStatX = "FAIL"; else if (max_th_X > 0.1) pStatX = "Amplify";
   setStatus(sheet.getRange(r, 10), pStatX); r++;
   
   sheet.getRange(r, 6).setValue("(Y)").setHorizontalAlignment("right"); 
   sheet.getRange(r, 7).setValue("'=").setHorizontalAlignment("center");
-  sheet.getRange(r, 8).setValue(sNum(max_th_Y, 4)).setHorizontalAlignment("center"); 
-  let pStatY = "PASS"; if (max_th_Y > th_max) pStatY = "FAIL"; else if (max_th_Y > 0.1) pStatY = "Amplify";
+  sheet.getRange(r, 8).setValue(p.totalHeight > 25 ? "N/A" : sNum(max_th_Y, 4)).setHorizontalAlignment("center"); 
+  let pStatY = "PASS"; if(p.totalHeight > 25) pStatY = "-"; else if (max_th_Y > th_max) pStatY = "FAIL"; else if (max_th_Y > 0.1) pStatY = "Amplify";
   setStatus(sheet.getRange(r, 10), pStatY); r += 2;
 
   sheet.getRange(r, 1, 1, 4).merge().setValue("- แรงในแนวดิ่งที่กระทำกับตัวอาคาร").setFontWeight("bold"); r++;
@@ -623,10 +661,10 @@ function createCalculationSheet(res) {
   sheet.getRange(r, 8).setValue(sNum(DL_long, 2)).setHorizontalAlignment("center");
   sheet.getRange(r, 9).setValue("ตัน/ม.").setHorizontalAlignment("left"); r++;
   
-  sheet.getRange(3, 1, r - 3, 10).setBorder(true, true, true, true, false, false, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange(sumStart, 1, r - sumStart, 10).setBorder(true, true, true, true, false, false, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   let summaryEndRow = r - 1; 
-  let tablesStartRow = 60; 
+  let tablesStartRow = 115; 
 
   let reportGapStart = summaryEndRow + 1;
   let reportGapEnd = tablesStartRow - 1; 
@@ -661,7 +699,7 @@ function createCalculationSheet(res) {
     let table2 = [];
     for (let i = 0; i < levels.length; i++) {
       let l = levels[i];
-      if (l.hx > 0) { table2.push([ l.name, isX ? sNum(l.kx_X, 0) : sNum(l.kx_Y, 0), sNum(l.Px, 1), isX ? sNum(l.dx_X, 2) : sNum(l.dx_Y, 2), isX ? sNum(l.drift_X, 5) : sNum(l.drift_Y, 5), isX ? (l.dStat_X || "-") : (l.dStat_Y || "-"), isX ? sNum(l.th_X, 4) : sNum(l.th_Y, 4), isX ? (l.pStat_X || "-") : (l.pStat_Y || "-"), sNum(l.Mx, 2) ]); }
+      if (l.hx > 0) { table2.push([ l.name, isX ? sNum(l.kx_X, 0) : sNum(l.kx_Y, 0), sNum(l.Px, 1), p.totalHeight > 25 ? "N/A" : (isX ? sNum(l.dx_X, 2) : sNum(l.dx_Y, 2)), p.totalHeight > 25 ? "N/A" : (isX ? sNum(l.drift_X, 5) : sNum(l.drift_Y, 5)), p.totalHeight > 25 ? "-" : (isX ? (l.dStat_X || "-") : (l.dStat_Y || "-")), p.totalHeight > 25 ? "N/A" : (isX ? sNum(l.th_X, 4) : sNum(l.th_Y, 4)), p.totalHeight > 25 ? "-" : (isX ? (l.pStat_X || "-") : (l.pStat_Y || "-")), sNum(l.Mx, 2) ]); }
     }
     if (table2.length > 0) {
       sheet.getRange(r, 1, table2.length, 9).setValues(table2).setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID).setHorizontalAlignment("center").setWrap(true).setVerticalAlignment("middle");
@@ -669,7 +707,7 @@ function createCalculationSheet(res) {
         if (i % 2 !== 0) sheet.getRange(r + i, 1, 1, 9).setBackground(CONFIG.colors.tableRowEven);
         let dStat = table2[i][5]; let pStat = table2[i][7];
         if (dStat === "FAIL") sheet.getRange(r + i, 6).setBackground("#fce8e6").setFontColor("#c5221f").setFontWeight("bold"); else if (dStat === "OK") sheet.getRange(r + i, 6).setFontColor("#137333").setFontWeight("bold");
-        if (pStat.includes("FAIL")) sheet.getRange(r + i, 8).setBackground("#fce8e6").setFontColor("#c5221f").setFontWeight("bold"); else if (pStat.includes("Amplify")) sheet.getRange(r + i, 8).setBackground("#fef7e0").setFontColor("#b06000").setFontWeight("bold"); else if (pStat === "OK") sheet.getRange(r + i, 8).setFontColor("#137333").setFontWeight("bold");
+        if (pStat && pStat.includes("FAIL")) sheet.getRange(r + i, 8).setBackground("#fce8e6").setFontColor("#c5221f").setFontWeight("bold"); else if (pStat && pStat.includes("Amplify")) sheet.getRange(r + i, 8).setBackground("#fef7e0").setFontColor("#b06000").setFontWeight("bold"); else if (pStat === "OK") sheet.getRange(r + i, 8).setFontColor("#137333").setFontWeight("bold");
       }
       r += table2.length + 2;
     }
@@ -720,6 +758,7 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   const heights_meters = rawHeight.split(',').map(Number).filter(n => n > 0); 
   const loads_val = rawLoads.split(',').map(Number);
   const ptLoads_val = rawPointLoads.split(',').map(Number);
+  const pi = (calcResult && calcResult.params && calcResult.params.projectInfo) ? calcResult.params.projectInfo : {};
 
   let totalWidthX_m = spansX_meters.reduce((sum, val) => sum + (val || 0), 0);
   let totalWidthY_m = spansY_meters.reduce((sum, val) => sum + (val || 0), 0);
@@ -729,7 +768,6 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   let res = Math.max(max_span_m / 40, totalHeight_m / 50);
   if (res < 0.1) res = 0.1;
 
-  // [V0.5.28] บังคับช่วงเสาต้องห่างกันขั้นต่ำ 6 เซลล์ เพื่อรับประกันว่ารูป Footing (กว้าง 3) จะไม่มีวันทับซ้อนกันแน่นอน!
   const spansX_cells = spansX_meters.map(n => Math.max(6, Math.round((n || 0) / res)));
   const spansY_cells = spansY_meters.map(n => Math.max(6, Math.round((n || 0) / res)));
   const heights_cells = heights_meters.map(n => Math.max(6, Math.round((n || 0) / res)));
@@ -744,7 +782,9 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   let maxForce = Math.max(maxF, maxV, 1);
   let dScale = 12 / maxForce; 
 
-  const requiredLeftSpace = 45; 
+  // ปรับจาก 45 เป็น 36 เพื่อขยับอาคารให้ชิดเส้น Dimension เข้ามาอีก 9 ช่อง
+  const requiredLeftSpace = 36; 
+  
   const totalRowsNeeded = 800; 
 
   if (totalRowsNeeded > planSheet.getMaxRows()) planSheet.insertRowsAfter(planSheet.getMaxRows(), totalRowsNeeded - planSheet.getMaxRows());
@@ -755,6 +795,13 @@ function generateBlueprintFromData(rawSpanX, rawHeight, rawLoads, rawSpanY, rawP
   planSheet.getRange(1, 1, totalRowsNeeded, 130).setBackground("#ffffff");
 
   let infoCol = requiredLeftSpace;
+  
+  let planRightCol = requiredLeftSpace + Math.max(totalWidthX_cells, totalWidthY_cells) - 10;
+  if(planRightCol < requiredLeftSpace + 40) planRightCol = requiredLeftSpace + 40;
+  planSheet.getRange(2, planRightCol, 1, 15).merge().setValue("Project: " + (pi.projName || "-")).setHorizontalAlignment("right").setFontWeight("bold").setFontColor("#555");
+  planSheet.getRange(3, planRightCol, 1, 15).merge().setValue("Date: " + fmtDate(pi.projDate)).setHorizontalAlignment("right").setFontColor("#555");
+  planSheet.getRange(4, planRightCol, 1, 15).merge().setValue("Designed By: " + (pi.desName || "-") + " (กว. " + (pi.desLic || "-") + ")").setHorizontalAlignment("right").setFontColor("#555");
+
   if (calcResult && calcResult.params) {
     planSheet.getRange(2, infoCol, 1, 30).merge().setValue("BUILDING SUMMARY").setFontWeight("bold").setFontSize(10).setFontColor("#1565c0").setHorizontalAlignment("left");
     planSheet.getRange(3, infoCol, 1, 30).merge().setValue("• Floor Area: " + sNum(calcResult.params.floorArea, 2) + " sq.m/floor").setFontSize(9).setFontWeight("bold").setHorizontalAlignment("left");
@@ -957,9 +1004,8 @@ function createLabelBox(sheet, row, col, text, color, align, isBold, fontSize) {
   if (isBold) range.setFontWeight("bold");
 }
 
-// [V0.5.28] ปรับขนาดฐานรากให้เล็กลง เพื่อไม่ให้ทับซ้อนกันเมื่อระยะห่างเสาถูกบีบ
 function drawFixedSupport(sheet, row, centerX) {
-  let startX = centerX - 1; // กินพื้นที่แค่ 3 เซลล์ (ตรงกลาง + ซ้าย 1 ขวา 1)
+  let startX = centerX - 1; 
   if (startX > 0) {
     sheet.getRange(row, startX, 2, 3).merge().setBackground(CONFIG.colors.support).setBorder(true, true, true, true, null, null, "black", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
     sheet.getRange(row + 2, startX - 1, 1, 5).merge().setValue("/ / / / /").setHorizontalAlignment("center").setVerticalAlignment("middle").setFontSize(8).setFontColor("#757575").setFontStyle("italic");
